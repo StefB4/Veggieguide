@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Encoding -->
+<meta charset="utf-8"/>
+
+
+<!-- Includes -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+ <!-- Make sure this is after Leaflet's CSS -->
+ <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+   integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+   crossorigin=""></script>
+
+
+
+
+
+
+
+<!-- Formatting of style elements --> 
+<style>
+
+/* Map size */
+@media only screen and (min-height: 800px){
+  #leaflet_map { height: 800px; }
+}
+@media only screen and (max-height: 800px){
+  #leaflet_map { height:90vh; }
+}
+
+/* Popups */ 
+a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_link:hover {font-weight:bold; text-decoration: none; color: #1c7e1a}
+#leaflet_popupname {font-size:16px; font-weight:bold}
+#leaflet_priceactual {color: gold; display: inline-block;}
+#leaflet_pricerest {color: lightgrey; display: inline-block;}
+
+/* Custom control layers icon */
+.leaflet-control-layers {
+	background:  #fff;
+}
+.leaflet-control-layers-toggle {
+	background-image: url(./ressources/icons/choice.png);
+	background-size: 45px 45px;
+  filter: brightness(0) saturate(100%) invert(30%) sepia(99%) saturate(803%) hue-rotate(82deg) brightness(94%) contrast(85%); /* #1c7e1a, credit: https://codepen.io/sosuke/pen/Pjoqqp */
+}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(./ressources/icons/choice.png);
+	background-size: 45px 45px; 
+  filter: brightness(0) saturate(100%) invert(30%) sepia(99%) saturate(803%) hue-rotate(82deg) brightness(94%) contrast(85%); /* #1c7e1a, credit: https://codepen.io/sosuke/pen/Pjoqqp */ 
+}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 50px;
+	height: 50px; 
+}
+
+/* No overhead spacing inside layer control list */ 
+.leaflet-control-layers-list {
+	padding:0;
+}
+
+/* Category headline and close button */ 
+.leaflet_category_headline_title {
+  margin-top:16px;
+  margin-bottom:4px;
+  font-size: 18px;
+  display: inline-block;
+	font-weight: bold;
+}
+.leaflet_category_headline_close_button {
+  position: absolute; 
+	top: 0px;
+	right: 0; 
+	border: none;
+	text-align: right;
+	font: 16px/14px Tahoma, Verdana, sans-serif;
+	color: #c3c3c3;
+	text-decoration: none;
+	font-weight: bold;
+	background: transparent;
+	}
+.leaflet_category_headline_close_button:hover {
+	color: #999;
+  cursor: pointer;
+}
+
+
+</style>
+
+</head>
+<body>
+
+
+<!-- The map in the DOM -->
+<div id="leaflet_map">
+  <br><br><br>
+  <p class="enable-cookies-warning" style="text-align:center;">Bitte die Cookies akzeptieren und die Seite neu laden um den Veggieguide nutzen zu können 😊
+  </p>
+</div>
+    
+
+
+<script type="text/javascript">
+//<!--
+// Prevent escaping of code in wordpress
+
+
+////////
+// Settings: Paths & names & sizes
+var veganplacesCsvPath = './ressources/database/veggiedb.csv'
+var iconsBasePath = './ressources/icons/'
+var guideCategories = ['baeckerei','cafe','eiscafe','foodtruck','beauty','geschaeft','imbiss','restaurant']
+var guideCategoryLabels = ['Bäckerei','Café','Eiscafé','Foodtruck','Beauty','Geschäft','Imbiss','Restaurant']
+var defaultGuideCategory = 'default'
+var centerOfMap = [52.2745, 8.0473]
+var markerIconSize = [60, 90]  
+var markerShadowSize = [60, 90]  
+var markerIconAnchor = [30, 80] 
+var markerShadowAnchor = [30, 80]  
+var markerPopupAnchor = [0, -48] 
+var tileLayerLink = 'https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png'
+////////
+
+
+// Load raw data from the csv
+function LoadFile(filePath) {
+  var result = null;
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", filePath, false);
+  xmlhttp.send();
+  if (xmlhttp.status==200) {
+    result = xmlhttp.responseText;
+  }
+  return result;
+}
+
+// Parse csv 
+function ParseCsv(csv,delimiter,newline){
+  var allLines = csv.split(newline);
+  var parsedData = [];
+  var headers = allLines[0].split(delimiter); 
+  for(var i = 1; i < allLines.length; i++){
+    var currentLineParsed = {};
+    var currentLine = allLines[i].split(delimiter); 
+    for(var j = 0; j < headers.length; j++){
+      currentLineParsed[headers[j].trim()] = (typeof currentLine[j] == 'undefined' ? "" : currentLine[j].trim()) // clean up 
+    }
+    parsedData.push(currentLineParsed);
+  }
+  return parsedData;
+}
+
+// Check whether category has data 
+function categoryHasData(category){
+  if (["_","-","", " ", null].includes(category))
+  {
+    return false;
+  }
+  return true; 
+}
+
+// Disable cookie warning when cookies are allowed 
+document.getElementsByClassName('enable-cookies-warning')[0].style.visibility = 'hidden';
+
+// Load csv 
+// var raw_csv = LoadFile(veganplacesCsvPath);
+var raw_csv = `id;latitude;longitude;name;category;description;website;websitedescription;instagram;phone;address;pricing;veganlevel
+1;52.270186;8.044069;Beispiel Restaurant;restaurant;Hier gibt es tolles veganes Essen!;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 123, 49074;1;4
+2;52.278297;8.044425;Beispiel Foodtruck;foodtruck;Bemerkenswerter Foodtruck! Much wow!;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 456, 49074;2;2
+3;52.280750;8.021324;Beispiel Imbiss;imbiss;Leckere Fritten.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 789, 49074;1;3
+4;52.270313;8.051628;Beispiel Friseur;beauty;Vollständig veganer Friseur.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 123, 49074;2;4
+5;52.282187;8.046541;Beispiel Geschaeft;geschaeft;Einige vegane Optionen.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 456, 49074;3;2
+6;52.275895;8.041478;Beispiel Café;cafe;Leckerer Kaffee, einige vegane Kuchen.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 789, 49074;1;3
+7;52.272758;8.048550;Beispiel Eiscafé;eiscafe;Bietet ein paar vegane Eissorten an.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 123, 49074;3;1
+8;52.273972;8.041279;Beispiel Bäckerei;baeckerei;Einiges veganes Gebäck.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 456, 49074;2;2`
+
+
+// Construct dictionaries
+var guideCategoriesDict = {}
+var guideCategoriesRevDict = {}
+for (var idx = 0; idx < guideCategories.length; idx ++)
+{
+  guideCategoriesDict[guideCategories[idx]] = idx
+  guideCategoriesRevDict[idx] = guideCategories[idx]
+}
+
+// Load raw marker data by parsing csv  
+//var allMarkerData = jQuery.csv.toObjects(raw_csv,{separator:';'});
+var allMarkerData = ParseCsv(raw_csv,";","\n")
+
+
+// Create map  
+// Disable tap to enable popups showing properly on Safari in Leaflet 1.7.1 
+// Enable only for iOS devices to enable proper moving the map 
+tapEnabled = false
+if(/iPhone|iPad|iPod/i.test(navigator.userAgent) ) { // regex ignoring case 
+  tapEnabled = true
+}
+guideMap = L.map('leaflet_map', { "tap": tapEnabled }).setView(centerOfMap, 15); 
+
+// Load map data 
+L.tileLayer(tileLayerLink, { 
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>', 
+    maxZoom: 18,
+    tileSize: 256,
+    zoomOffset: 0 
+}).addTo(guideMap);
+
+// Load marker icons 
+// [0,0] is top left corner 
+var categoryMarkerIconImages = [] // list of lists 
+var defaultMarkerIconImages = []
+
+// For each category load the four differently colored markers 
+for (var catIdx = 0; catIdx < Object.keys(guideCategoriesDict).length; catIdx ++)
+{
+  catIcons = []
+  for (i = 0;i < 4; i++)
+  {
+    markerIcon = L.icon({
+      iconUrl: iconsBasePath + guideCategoriesRevDict[catIdx] + String(i+1) + '.png',
+      shadowUrl: iconsBasePath + 'shadow.png',
+      iconSize:     markerIconSize, // size of the icon
+      shadowSize:   markerShadowSize, // size of the shadow
+      iconAnchor:   markerIconAnchor, // point of the icon which will correspond to marker's location
+      shadowAnchor: markerShadowAnchor,  // the same for the shadow
+      popupAnchor:  markerPopupAnchor // point from which the popup should open relative to the iconAnchor
+    });
+    catIcons.push(markerIcon);
+  }
+  categoryMarkerIconImages.push(catIcons)
+}
+
+
+
+
+// Init markers and marker texts 
+var allMarkers = [];
+var allMarkerTexts = [];
+var allMarkersByCategory = []; 
+for (var e = 0; e < Object.keys(guideCategoriesDict).length; e++ ) {
+  allMarkersByCategory[e] = []; 
+}
+
+
+
+// Create markers, add to map, create texts and bind text to markers 
+for(i = 0; i < allMarkerData.length; i++)
+{
+  // Overwrite entries with non-defined categories to default 
+  if ((!guideCategories.includes(allMarkerData[i]['category'])) && allMarkerData[i]['category'] != defaultGuideCategory)
+  {
+    console.log('Skipping entry with name: "' + allMarkerData[i]['name'] + '" of category "' + allMarkerData[i]['category'] + '".')
+    allMarkerData[i]['category'] = defaultGuideCategory;
+    continue;
+  }
+
+  // Get the marker icon category
+  markerCat = categoryMarkerIconImages[guideCategoriesDict[allMarkerData[i]['category']]]
+  
+  // Get the veganlevel 
+  var veganLevel = Math.round(allMarkerData[i]['veganlevel'])
+  if (veganLevel < 1 || veganLevel > 4)
+  {
+    veganLevel = 1 // fallback 
+  }
+
+  // Get the icon from category and veganlevel (array starts at 0)
+  markerIcon = markerCat[veganLevel-1]
+
+  // Create marker and store in list of all markers
+  allMarkers.push(new L.marker([allMarkerData[i]['latitude'], allMarkerData[i]['longitude']], {icon: markerIcon}))
+  
+  // Construct marker text 
+  var currentMarkerText = "";
+  currentMarkerText += '<div id="leaflet_popupname">' + allMarkerData[i]['name'] + '</div>'
+  currentMarkerText += allMarkerData[i]['description'] + '<br><br>'
+  if (categoryHasData(allMarkerData[i]['website'])) // website info if provided 
+  {
+    if (!categoryHasData(allMarkerData[i]['websitedescription'])) // website description missing
+    {
+      console.log("Website description undefined for " + allMarkerData[i]['name'])
+    }
+    else 
+    {
+      currentMarkerText += 'Website: <a class="leaflet_link" href="' + allMarkerData[i]['website'] + '" target="_blank">' + allMarkerData[i]['websitedescription'] + '</a><br>';
+    }
+  }
+  if (categoryHasData(allMarkerData[i]['instagram'])) // instagram info if provided
+  {
+    var curr_insta_link = 'https://www.instagram.com/' + allMarkerData[i]['instagram'].substring(1) + '/'
+    currentMarkerText += 'Instagram: <a class="leaflet_link" href="' + curr_insta_link + '" target="_blank">' + allMarkerData[i]['instagram'] + '</a><br>'
+  }
+  if (categoryHasData(allMarkerData[i]['phone'])) // phone info if provided
+  {
+    currentMarkerText += "Telefon: " + allMarkerData[i]['phone'] + '<br>';
+  }
+  if (categoryHasData(allMarkerData[i]['address'])) // address info if provided
+  {
+    currentMarkerText += "Adresse: " + allMarkerData[i]['address'] + '<br>';
+  }
+  if (categoryHasData(allMarkerData[i]['pricing'])) // price info if provided
+  {
+      currentMarkerText += '<br>'
+
+      if (allMarkerData[i]['pricing'] == '1')
+      {
+          currentMarkerText += 
+            `<div style="display: inline-block;">Preise:</div> <div id="leaflet_priceactual">€</div><div id="leaflet_pricerest">€€</div>`
+      }
+      else if (allMarkerData[i]['pricing'] == '2')
+      {
+        currentMarkerText += 
+          `<div style="display: inline-block;">Preise:</div> <div id="leaflet_priceactual">€€</div><div id="leaflet_pricerest">€</div>`
+      }
+      else if (allMarkerData[i]['pricing'] == '3')
+      {
+          currentMarkerText += 
+            `<div style="display: inline-block;">Preise:</div> <div id="leaflet_priceactual">€€€</div>`
+      }
+  }
+  allMarkerTexts.push(currentMarkerText);
+
+  // Add text to marker popup, refer to own last element since data-entries may have been skipping, skewing the numbering 
+  allMarkers[allMarkers.length - 1].bindPopup(allMarkerTexts[allMarkerTexts.length - 1]); 
+
+  // Sort marker into corresponding category
+  if (allMarkerData[i]['category'] == defaultGuideCategory)
+  {
+    console.log(allMarkerData[i]['name'] + ' has category ' + allMarkerData[i]['category'] + ' and will not be shown on the map!')
+  }
+  else
+  {
+    allMarkersByCategory[guideCategoriesDict[allMarkerData[i]['category']]].push(allMarkers[allMarkers.length - 1])
+  }
+
+}
+
+
+// Log number of markers 
+if (true)
+  {
+    for (var e = 0; e < allMarkersByCategory.length; e++ ) {
+      console.log('Number of markers for category ' + guideCategories[e] + ': ' + allMarkersByCategory[e].length)
+  }
+}
+
+
+// Create layergroups from markers 
+allLayerGroup = L.layerGroup() // only controls the others 
+var layerGroups = []
+for (var e = 0; e < Object.keys(guideCategoriesDict).length; e++ ) {
+  layerGroups[e] = new L.layerGroup(allMarkersByCategory[e]);
+}
+
+// Create the overlay maps from the layergroups  
+overlayMaps = {"<b>Alle</b>": allLayerGroup}
+for (var e = 0; e < Object.keys(guideCategoriesDict).length; e++ ) {
+  overlayMaps[guideCategoryLabels[e]] = layerGroups[e];
+}
+
+
+// Add the control to the map 
+control = L.control.layers(null, overlayMaps, {collapsed:true}).addTo(guideMap);
+
+
+// Make sure that deactivating single category and subsequently the all layer does not remove all layers 
+var deactivated_single_cat = false;
+
+// Add listener for add-overlay-event to enable activating all cats on press of all-button 
+guideMap.on('overlayadd', function(arg) {
+
+  // Pressed the all-button, activate all layergroups 
+  if (arg.name === '<b>Alle</b>') {
+
+    setTimeout(function() { // Use time-out, explanation here https://github.com/Leaflet/Leaflet/issues/6400#issuecomment-437509330 
+    for (var e = 0; e < Object.keys(guideCategoriesDict).length; e++) {
+      if (!guideMap.hasLayer(layerGroups[e]))
+      {
+        guideMap.addLayer(layerGroups[e]) 
+      }
+         
+    }
+  }, 10);
+
+    // Prevent all-button not being responsive 
+    deactivated_single_cat = false;
+  }
+});
+
+// Add listener for remove-overlay-event to enable deactivating all cats on press of all-button 
+guideMap.on('overlayremove', function(arg) {
+
+  // Pressed the all-button, deactivates all layergroups 
+  if (arg.name === '<b>Alle</b>') {
+
+    // Deactivate all only, if listener was not invoked by removal of all layer when deactivating single category  
+    if (!deactivated_single_cat)
+    {
+      setTimeout(function() {
+        for (var e = 0; e < Object.keys(guideCategoriesDict).length; e++ ) { 
+          if (guideMap.hasLayer(layerGroups[e])){
+            guideMap.removeLayer(layerGroups[e])
+          }
+        }
+      }, 10);
+    }
+  } 
+
+  // Pressed to deactivate a category and not all 
+  else {
+    deactivated_single_cat = true;
+    setTimeout(function() {
+      guideMap.removeLayer(allLayerGroup)
+    }, 10);
+  }
+});
+
+// Start map with all markers visible and categories expanded 
+guideMap.addLayer(allLayerGroup)
+control.expand()
+
+
+// Create ategory headline and close button 
+let controlLayersList = document.getElementsByClassName('leaflet-control-layers-list')[0];
+let categoryHeadlineDiv = document.createElement('div'); // Div that holds the entire headline 
+let categoryTitleDiv = document.createElement('div') // Categories title 
+let closeCategoryListDiv = document.createElement('div') // Categories list close button 
+categoryTitleDiv.classList.add('leaflet_category_headline_title');
+closeCategoryListDiv.classList.add('leaflet_category_headline_close_button');
+closeCategoryListDiv.textContent = "x"
+closeCategoryListDiv.setAttribute("onclick", "CloseCategoryList()");
+categoryTitleDiv.textContent  = "Kategorien"
+categoryHeadlineDiv.appendChild(categoryTitleDiv)
+categoryHeadlineDiv.appendChild(closeCategoryListDiv)
+controlLayersList.insertBefore(categoryHeadlineDiv, controlLayersList.firstElementChild);
+
+
+// Enable closing of the category list 
+function CloseCategoryList() {
+  control.collapse();
+}
+
+
+// Prevent escaping of code in wordpress
+//-->
+</script>
+</body>
+</html>
