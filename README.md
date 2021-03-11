@@ -2,6 +2,7 @@
 Interaktive Karte mit Listenfunktion für Veggie-Angebote in einer Region. 
 Den Osnabrücker Veggieguide in Action gibt es hier: [Veggieguide der Tierrechtsinitiative Osnabrück](https://www.tierrechtsinitiative-os.de/veggieguide/)
 
+![](./img/veggieguide_example.png)
 
 
 ### Icon Lizenzen 
