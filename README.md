@@ -6,7 +6,7 @@ Den Osnabrücker Veggieguide in Action gibt es hier: [Veggieguide der Tierrechts
 
 
 ### Icon Lizenzen 
-Die Icons innerhalb der Marker stammen aus diesen Quellen:
+Die Icons innerhalb der Marker sind lizensiert als Creative Commons CCBY und stammen aus diesen Quellen:
  - Barber Shop by [cindy clegane](https://thenounproject.com/cindyclegane) from the Noun Project 
  - bistro by [Prettycons](https://thenounproject.com/andrei.manolache7) from the Noun Project 
  - Cupcake by [Luiz Carvalho](https://thenounproject.com/luizcarvalhoid) from the Noun Project 
