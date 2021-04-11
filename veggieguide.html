@@ -208,6 +208,11 @@ var raw_csv = `id;latitude;longitude;name;category;description;website;websitede
 8;52.273972;8.041279;Beispiel Bäckerei;baeckerei;Einiges veganes Gebäck.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 456, 49074;2;2`
 
 
+
+/////////////////
+// MAP         //
+/////////////////
+
 // Construct dictionaries
 var guideCategoriesDict = {}
 var guideCategoriesRevDict = {}
@@ -477,19 +482,12 @@ function CloseCategoryList() {
 
 
 
+/////////////////
+// LIST        //
+/////////////////
 
 
-
-
-
-
-
-
-
-
-
-
-
+// Inits 
 var listToggleButton = document.getElementById("list_toggle_button");
 var mapToggleButton = document.getElementById("map_toggle_button");
 var mapToggleButton2 = document.getElementById("map_toggle_button2");
@@ -499,15 +497,16 @@ var detailsRowsByCategory = {};
 var allTableRows = [];
 var allTableDetailsRows = [];
 
+// Display List instead of Map 
 function SwitchToListView() {
   listToggleButton.style.display = "none";
   mapToggleButton.style.display = "inline-block";
   mapToggleButton2.style.display = "inline-block";
   document.getElementById("leaflet_map").style.display = "none";
-  document.getElementById("veggieguide_list").style.display = "block";
-  //mapToggleButton.scrollIntoView(true);
+  document.getElementById("veggieguide_list").style.display = "block";  
 }
 
+// Display Map instead of List 
 function SwitchToMapView() {
   mapToggleButton.style.display = "none";
   mapToggleButton2.style.display = "none";
@@ -518,6 +517,7 @@ function SwitchToMapView() {
   guideMap.invalidateSize() // make sure tiles are reloaded after moving the map 
 }
 
+// Open a marker on the Map 
 function mapLinkHandler(event) {
   let id = event.target.dataset.id;
   SwitchToMapView();
@@ -525,25 +525,24 @@ function mapLinkHandler(event) {
   guideMap.invalidateSize() // make sure tiles are reloaded after moving the map 
 }
 
+// Expand details in the list view  
 function detailsDisplayHandler(event) {
 
-  let details = detailsRowList[event.target.dataset.id];
-
   let useParent = false;
-
-  // in case of pressing name text rather than td, use parent, i.e. td 
+  let details = detailsRowList[event.target.dataset.id];
+  
+  // in case of pressing the name text rather than table cell, use parent, i.e. table cell td 
   if (typeof details == 'undefined') {
     details = detailsRowList[event.target.parentNode.dataset.id]; 
     useParent = true;
   }
 
-
+  // Show details 
   if (details.style.display == "none") {
     details.style.display = "table-row";
-    // change plus sign to a minus sign & increase font weight 
-    if (useParent) {
-      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "-";
-      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "bold"; 
+    if (useParent) { 
+      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "-"; // + -> -   
+      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "bold"; // increase font weight 
       event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
     } else {
       event.target.getElementsByTagName('div')[1].innerHTML = "-";
@@ -551,12 +550,11 @@ function detailsDisplayHandler(event) {
       event.target.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
     }
     
-  } else {
+  } else { // hide details 
     details.style.display = "none";
-    // change minus sign to a plus sign 
     if (useParent) {
-      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "+";
-      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "normal";
+      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "+"; // - -> +
+      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "normal"; // decrease font weight 
       event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "normal";
     } else {
       event.target.getElementsByTagName('div')[1].innerHTML = "+";
@@ -566,9 +564,9 @@ function detailsDisplayHandler(event) {
   }
 }
 
+// Create the details text for an entry 
 function constructDetailsText(data) {
   let detailsText = "";
-  //detailsText += '<div style="font-weight: bold">' + data['name'] + '</div>'
   detailsText += data['description'] + '<br><br>'
   if (categoryHasData(data['website']) && categoryHasData(data['websitedescription'])) // website info if provided 
   {
@@ -621,7 +619,7 @@ function constructDetailsText(data) {
   return detailsText;
 }
 
-
+// Init empty arrays 
 function initRowsStorageArrays() {
   rowsByCategory[defaultGuideCategory] = [];
   detailsRowsByCategory[defaultGuideCategory] = [];
@@ -631,42 +629,32 @@ function initRowsStorageArrays() {
   }
 }
 
-
+// Get buttons and main list table 
 listToggleButton.onclick = SwitchToListView;
 mapToggleButton.onclick = SwitchToMapView;
 mapToggleButton2.onclick = SwitchToMapView;
-
 var tableNode = document.getElementById("veggieguide_table");
 
+// Init 
 initRowsStorageArrays();
 
+// Create list rows 
 var buttonId = 0;
 var elementId = 0;
 for (var i = 0; i < allMarkerData.length; i++) {
+
+  // Init current row 
   let currentRow = document.createElement("tr");
 
-
+  // Name 
   let name = document.createElement("td");
   name.innerHTML = '<div style="display:inline;">' +  // construct name with expansion indicator
-    allMarkerData[i].name + '</div>' + '<div style="display: inline; float:right; padding-right:1em;">' +  '+'  + '</div>';
-  
+    allMarkerData[i].name + '</div>' + '<div style="display: inline; float:right; padding-left:1em; padding-right:1em;">' +  '+'  + '</div>';
   name.dataset.id = i;
   name.style.cursor = "pointer"
   name.addEventListener("click", detailsDisplayHandler,true) // activate details handler on click of name 
 
-  /* let detailsLinkTd = document.createElement("td");
-  let detailsLink = document.createElement("div");
-  detailsLink.innerHTML = "Details";
-  detailsLink.dataset.id = i;
-  detailsLink.addEventListener("click", detailsDisplayHandler, true);
-  detailsLink.style.cursor = "pointer";
-  detailsLink.classList.add("color-accent");
-  detailsLink.style.textDecoration = "underline";
-  
-
-  detailsLinkTd.appendChild(detailsLink);
-  */ 
-
+  // Map link 
   let mapLinkTd = document.createElement("td");
   if (!(!guideCategories.includes(allMarkerData[i]['category'])) && allMarkerData[i]['category'] != defaultGuideCategory)
   {
@@ -675,28 +663,16 @@ for (var i = 0; i < allMarkerData.length; i++) {
     mapLink.dataset.id = buttonId;
     mapLink.addEventListener("click", mapLinkHandler, true);
     mapLink.style.cursor = "pointer";
-    //mapLink.style.all = "revert";
     mapLink.classList.add("color-accent");
     mapLink.style.textDecoration = "underline";
-
     mapLinkTd.appendChild(mapLink);
     buttonId++;
   }
 
-  /*let websiteLinkTd = document.createElement("td");
-  let websiteLink = document.createElement("a");
-  websiteLink.href = allMarkerData[i].website;
-  websiteLink.innerHTML = allMarkerData[i].websitedescription;
-  websiteLinkTd.appendChild(websiteLink);
-  */
-
+  // Add constructed row 
   currentRow.appendChild(name);
-  //currentRow.appendChild(detailsLinkTd);
   currentRow.appendChild(mapLinkTd);
-  //currentRow.appendChild(websiteLinkTd);
-
   currentRow.className = "table-row-cat-" + allMarkerData[i].category;
-
   tableNode.appendChild(currentRow);
   rowsByCategory[allMarkerData[i].category].push(currentRow);
   allTableRows.push(currentRow);
@@ -704,18 +680,13 @@ for (var i = 0; i < allMarkerData.length; i++) {
   // Details
   let currentRowDetails = document.createElement("tr");
   let detailsTd = document.createElement("td");
-
-  // detailsTd.innerHTML = allMarkerTexts[buttonId-1];
   detailsTd.innerHTML = constructDetailsText(allMarkerData[i]);
-  detailsTd.colSpan = 2; //4
+  detailsTd.colSpan = 2; 
   currentRowDetails.style.display = "none";
   currentRow.className = "table-row-cat-" + allMarkerData[i].category;
-
   detailsRowList[i] = currentRowDetails;
   detailsRowsByCategory[allMarkerData[i].category].push(currentRowDetails);
   allTableDetailsRows.push(currentRowDetails);
-  // detailsLink.dataset.detailsRow = currentRowDetails;
-
   currentRowDetails.appendChild(detailsTd);
   tableNode.appendChild(currentRowDetails);
 }
@@ -726,6 +697,7 @@ var categoryControls = document.getElementById("list_category_controls");
 var categoryAllCheckbox;
 var categoryCheckboxes = [];
 
+// Select all categories in the selection menu 
 function selectAllCategories(event) {
   
   if (event.target.checked) {
@@ -740,10 +712,6 @@ function selectAllCategories(event) {
     }
   }
 
-  // let allElements = document.getElementById("veggieguide_table").childNodes;
-  // for (var i = 0; i < allElements.length; i++) {
-  //   allElements[i].style.display = event.target.checked ? "table-row" : "none";
-  // }
   for (var i = 0; i < allTableRows.length; i++) {
     allTableRows[i].style.display = event.target.checked ? "table-row" : "none";
   }
@@ -754,27 +722,13 @@ function selectAllCategories(event) {
   }
 }
 
+// Select single category in the selection menu 
 function selectCategory(event) {
   if (!event.target.checked) {
     // if unchecked -> uncheck 'all'-checkbox
     categoryAllCheckbox.checked = false;
   }
 
-  // let affectedElements = document.getElementsByClassName("table-row-cat-" + event.target.value);
-  // console.log(event.target.value);
-  // console.log(affectedElements);
-  // // for (let tRow in affectedElements) {
-  // for (let i = 0; i < affectedElements.length; i++) {
-  //   let tRow = affectedElements[i];
-  //   console.log(tRow);
-  //   if (event.target.checked) {
-  //     tRow.style.display = "table-row";
-  //   } else {
-  //     tRow.style.display = "none";
-  //   }
-  // }
-
-  // let affectedElements = rowsByCategory[event.target.value].concat(detailsRowsByCategory[event.target.value]);
   let affectedElements = rowsByCategory[event.target.value];
   for (let i = 0; i < affectedElements.length; i++) {
     let tRow = affectedElements[i];
@@ -792,6 +746,7 @@ function selectCategory(event) {
   }
 }
 
+// Create the select all checkbox 
 let checkboxAll = document.createElement("input");
 checkboxAll.type = "checkbox";
 checkboxAll.id = "all";
@@ -812,6 +767,7 @@ labelledCheckbox.appendChild(labelAll);
 categoryControls.appendChild(labelledCheckbox);
 categoryAllCheckbox = checkboxAll;
 
+// Create category checkboxes 
 for (let i = 0; i < guideCategories.length; i++) {
   let catCheckbox = document.createElement("input");
   catCheckbox.type = "checkbox";
@@ -835,10 +791,9 @@ for (let i = 0; i < guideCategories.length; i++) {
 }
 
 
-
-
 // Prevent escaping of code in wordpress
 //-->
 </script>
 </body>
 </html>
+
