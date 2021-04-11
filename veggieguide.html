@@ -100,7 +100,19 @@ a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_li
   <p class="enable-cookies-warning" style="text-align:center;">Bitte die Cookies akzeptieren und die Seite neu laden um den Veggieguide nutzen zu können 😊
   </p>
 </div>
-    
+
+<div id="list_toggle" style="text-align: center">
+  <button id="list_toggle_button">Zur Listenansicht</button>
+  <button id="map_toggle_button" style="display: none">Zurück zur Karte</button>
+</div>
+<div id="veggieguide_list" style="display:none">
+  <div id="list_category_controls"></div>
+  <table id="veggieguide_table"></table>
+</div>
+<div style="text-align: center">
+  <button id="map_toggle_button2" style="display: none">Zurück zur Karte</button>
+</div>
+
 
 
 <script type="text/javascript">
@@ -443,6 +455,295 @@ controlLayersList.insertBefore(categoryHeadlineDiv, controlLayersList.firstEleme
 function CloseCategoryList() {
   control.collapse();
 }
+
+
+
+
+
+
+
+
+
+var listToggleButton = document.getElementById("list_toggle_button");
+var mapToggleButton = document.getElementById("map_toggle_button");
+var mapToggleButton2 = document.getElementById("map_toggle_button2");
+var detailsRowList = [];
+var rowsByCategory = {};
+var detailsRowsByCategory = {};
+var allTableRows = [];
+var allTableDetailsRows = [];
+
+function SwitchToListView() {
+  listToggleButton.style.display = "none";
+  mapToggleButton.style.display = "inline-block";
+  mapToggleButton2.style.display = "inline-block";
+  document.getElementById("leaflet_map").style.display = "none";
+  document.getElementById("veggieguide_list").style.display = "block";
+  //mapToggleButton.scrollIntoView(true);
+}
+
+function SwitchToMapView() {
+  mapToggleButton.style.display = "none";
+  mapToggleButton2.style.display = "none";
+  listToggleButton.style.display = "inline-block";
+  document.getElementById("leaflet_map").style.display = "block";
+  document.getElementById("veggieguide_list").style.display = "none";
+  document.getElementById("leaflet_map").scrollIntoView(false);
+}
+
+function mapLinkHandler(event) {
+  let id = event.target.dataset.id;
+  SwitchToMapView();
+  allMarkers[id].openPopup();
+}
+
+function detailsDisplayHandler(event) {
+  let details = detailsRowList[event.target.dataset.id];
+  if (details.style.display == "none") {
+    details.style.display = "table-row";
+  } else {
+    details.style.display = "none";
+  }
+}
+
+function constructDetailsText(data) {
+  let detailsText = "";
+  detailsText += '<div style="font-weight: bold">' + data['name'] + '</div>'
+  detailsText += data['description'] + '<br><br>'
+  if (categoryHasData(data['website']) && categoryHasData(data['websitedescription'])) // website info if provided 
+  {
+    detailsText += 'Website: <a class="leaflet_link" href="' + data['website'] + '" target="_blank">' + data['websitedescription'] + '</a><br>';
+  }
+  if (categoryHasData(data['instagram'])) // instagram info if provided
+  {
+    let curr_insta_link = 'https://www.instagram.com/' + data['instagram'].substring(1) + '/'
+    detailsText += 'Instagram: <a class="leaflet_link" href="' + curr_insta_link + '" target="_blank">' + data['instagram'] + '</a><br>'
+  }
+  if (categoryHasData(data['phone'])) // phone info if provided
+  {
+    detailsText += "Telefon: " + data['phone'] + '<br>';
+  }
+  if (categoryHasData(data['address'])) // address info if provided
+  {
+    detailsText += "Adresse: " + data['address'] + '<br>';
+  }
+  if (categoryHasData(data['pricing'])) // price info if provided
+  {
+    detailsText += '<br>'
+
+    if (data['pricing'] == '1') {
+        detailsText += 
+          `<div style="display: inline-block;">Preise:</div> <div id="leaflet_priceactual">€</div><div id="leaflet_pricerest">€€</div>`
+    }
+    else if (data['pricing'] == '2') {
+      detailsText += 
+        `<div style="display: inline-block;">Preise:</div> <div id="leaflet_priceactual">€€</div><div id="leaflet_pricerest">€</div>`
+    }
+    else if (data['pricing'] == '3') {
+        detailsText += 
+          `<div style="display: inline-block;">Preise:</div> <div id="leaflet_priceactual">€€€</div>`
+    }
+  }
+
+  if (categoryHasData(data['veganlevel'])) { // vegan level info if provided
+    detailsText += '<br>';
+    if (data.veganlevel == '1') {
+      detailsText += '<div style="display: inline-block;">Ein paar vegane Angebote 🌱</div>';
+    } else if (data.veganlevel == '2') {
+      detailsText += '<div style="display: inline-block;">Einige vegane Angebote 🌱🌱</div>';
+    } else if (data.veganlevel == '3') {
+      detailsText += '<div style="display: inline-block;">Viele vegane Angebote 🌱🌱🌱</div>';
+    } else if (data.veganlevel == '4') {
+      detailsText += '<div style="display: inline-block;">Vollständig vegan 💚</div>';
+    }
+  }
+
+  return detailsText;
+}
+
+function initRowsStorageArrays() {
+  rowsByCategory[defaultGuideCategory] = [];
+  detailsRowsByCategory[defaultGuideCategory] = [];
+  for (var i = 0; i < guideCategories.length; i++) {
+    rowsByCategory[guideCategories[i]] = [];
+    detailsRowsByCategory[guideCategories[i]] = [];
+  }
+}
+
+
+listToggleButton.onclick = SwitchToListView;
+mapToggleButton.onclick = SwitchToMapView;
+mapToggleButton2.onclick = SwitchToMapView;
+
+var tableNode = document.getElementById("veggieguide_table");
+
+initRowsStorageArrays();
+
+var buttonId = 0;
+var elementId = 0;
+for (var i = 0; i < allMarkerData.length; i++) {
+  let currentRow = document.createElement("tr");
+
+
+  let name = document.createElement("td");
+  name.innerHTML = allMarkerData[i].name;
+
+  let detailsLinkTd = document.createElement("td");
+  let detailsLink = document.createElement("div");
+  detailsLink.innerHTML = "Details";
+  detailsLink.dataset.id = i;
+  detailsLink.addEventListener("click", detailsDisplayHandler, true);
+  detailsLink.style.cursor = "pointer";
+  detailsLink.classList.add("color-accent");
+  detailsLink.style.textDecoration = "underline";
+
+  detailsLinkTd.appendChild(detailsLink);
+
+
+  let mapLinkTd = document.createElement("td");
+  if (!(!guideCategories.includes(allMarkerData[i]['category'])) && allMarkerData[i]['category'] != defaultGuideCategory)
+  {
+    let mapLink = document.createElement("div");
+    mapLink.innerHTML = "in Karte zeigen";
+    mapLink.dataset.id = buttonId;
+    mapLink.addEventListener("click", mapLinkHandler, true);
+    mapLink.style.cursor = "pointer";
+    mapLink.classList.add("color-accent");
+    mapLink.style.textDecoration = "underline";
+
+    mapLinkTd.appendChild(mapLink);
+    buttonId++;
+  }
+
+  let websiteLinkTd = document.createElement("td");
+  let websiteLink = document.createElement("a");
+  websiteLink.href = allMarkerData[i].website;
+  websiteLink.innerHTML = allMarkerData[i].websitedescription;
+  websiteLinkTd.appendChild(websiteLink);
+
+  currentRow.appendChild(name);
+  currentRow.appendChild(detailsLinkTd);
+  currentRow.appendChild(mapLinkTd);
+  currentRow.appendChild(websiteLinkTd);
+
+  currentRow.className = "table-row-cat-" + allMarkerData[i].category;
+
+  tableNode.appendChild(currentRow);
+  rowsByCategory[allMarkerData[i].category].push(currentRow);
+  allTableRows.push(currentRow);
+
+  // Details
+  let currentRowDetails = document.createElement("tr");
+  let detailsTd = document.createElement("td");
+
+  detailsTd.innerHTML = constructDetailsText(allMarkerData[i]);
+  detailsTd.colSpan = 4;
+  currentRowDetails.style.display = "none";
+  currentRow.className = "table-row-cat-" + allMarkerData[i].category;
+
+  detailsRowList[i] = currentRowDetails;
+  detailsRowsByCategory[allMarkerData[i].category].push(currentRowDetails);
+  allTableDetailsRows.push(currentRowDetails);
+
+  currentRowDetails.appendChild(detailsTd);
+  tableNode.appendChild(currentRowDetails);
+}
+
+
+// Category Selection for the List
+var categoryControls = document.getElementById("list_category_controls");
+var categoryAllCheckbox;
+var categoryCheckboxes = [];
+
+function selectAllCategories(event) {
+
+  if (event.target.checked) {
+    // if checked -> check all categories
+    for (let i = 0; i < categoryCheckboxes.length; i++) {
+      categoryCheckboxes[i].checked = true;
+    }
+  } else {
+    // if unchecked -> uncheck all categories
+    for (let i = 0; i < categoryCheckboxes.length; i++) {
+      categoryCheckboxes[i].checked = false;
+    }
+  }
+
+  for (let i = 0; i < allTableRows.length; i++) {
+    allTableRows[i].style.display = event.target.checked ? "table-row" : "none";
+  }
+  if (!event.target.checked) {
+    for (let i = 0; i < allTableDetailsRows.length; i++) {
+      allTableDetailsRows[i].style.display = "none";
+    }
+  }
+}
+
+function selectCategory(event) {
+  if (!event.target.checked) {
+    // if unchecked -> uncheck 'all'-checkbox
+    categoryAllCheckbox.checked = false;
+  }
+
+  let affectedElements = rowsByCategory[event.target.value];
+  for (let i = 0; i < affectedElements.length; i++) {
+    let tRow = affectedElements[i];
+    if (event.target.checked) {
+      tRow.style.display = "table-row";
+    } else {
+      tRow.style.display = "none";
+    }
+  }
+  affectedElements = detailsRowsByCategory[event.target.value];
+  for (let i = 0; i < affectedElements.length; i++) {
+    if (!event.target.checked) {
+      affectedElements[i].style.display = "none";
+    }
+  }
+}
+
+let checkboxAll = document.createElement("input");
+checkboxAll.type = "checkbox";
+checkboxAll.id = "all";
+checkboxAll.name = "category";
+checkboxAll.value = "all";
+checkboxAll.checked = true;
+checkboxAll.addEventListener("click", selectAllCategories);
+let labelAll = document.createElement("label");
+labelAll.htmlFor = "all";
+labelAll.innerHTML = "<b>Alle</b>";
+labelAll.style.fontFamily = "sans-serif";
+let labelledCheckbox = document.createElement("div");
+labelledCheckbox.style.display = "inline-block";
+labelledCheckbox.style.paddingLeft = "10px";
+labelledCheckbox.style.paddingRight = "10px";
+labelledCheckbox.appendChild(checkboxAll);
+labelledCheckbox.appendChild(labelAll);
+categoryControls.appendChild(labelledCheckbox);
+categoryAllCheckbox = checkboxAll;
+
+for (let i = 0; i < guideCategories.length; i++) {
+  let catCheckbox = document.createElement("input");
+  catCheckbox.type = "checkbox";
+  catCheckbox.id = guideCategories[i];
+  catCheckbox.name = "category";
+  catCheckbox.value = guideCategories[i];
+  catCheckbox.checked = true;
+  catCheckbox.addEventListener("click", selectCategory);
+  let catLabel = document.createElement("label");
+  catLabel.htmlFor = guideCategories[i];
+  catLabel.innerHTML = guideCategoryLabels[i];
+  catLabel.style.fontFamily = "sans-serif";
+  let labelledCheckbox = document.createElement("div");
+  labelledCheckbox.style.display = "inline-block";
+  labelledCheckbox.style.paddingLeft = "10px";
+  labelledCheckbox.style.paddingRight = "10px";
+  labelledCheckbox.appendChild(catCheckbox);
+  labelledCheckbox.appendChild(catLabel);
+  categoryControls.appendChild(labelledCheckbox);
+  categoryCheckboxes.push(catCheckbox);
+}
+
 
 
 // Prevent escaping of code in wordpress
