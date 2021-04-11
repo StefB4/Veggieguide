@@ -94,25 +94,43 @@ a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_li
 <body>
 
 
+<!-- 
+  Tierrechtsinitiative Osnabrück 2021 
+  www.tierrechtsinitiative-os.de
+-->
+
 <!-- The map in the DOM -->
 <div id="leaflet_map">
   <br><br><br>
-  <p class="enable-cookies-warning" style="text-align:center;">Bitte die Cookies akzeptieren und die Seite neu laden um den Veggieguide nutzen zu können 😊
-  </p>
+  <div class="enable-cookies-warning" style="text-align:center;">
+    Bitte die Cookies akzeptieren und die Seite neu laden um den Veggieguide nutzen zu können 😊
+    <br><br>
+    <div class="wp-block-button is-style-outline">
+      <input class="wp-block-button__link" type="button" value="Cookie-Banner öffnen" onclick="toggleCookieBanner();"></input>
+    </div>
+  </div>
 </div>
-
-<div id="list_toggle" style="text-align: center">
-  <button id="list_toggle_button">Zur Listenansicht</button>
-  <button id="map_toggle_button" style="display: none">Zurück zur Karte</button>
+<div id="list_toggle" class="wp-block-button is-style-outline" style="text-align: center">
+  <button id="list_toggle_button" class="wp-block-button__link">Zur Listenansicht</button>
+  <button id="map_toggle_button" class="wp-block-button__link" style="display: none">Zurück zur Karte</button>
 </div>
-<div id="veggieguide_list" style="display:none">
-  <div id="list_category_controls"></div>
+<div id="veggieguide_list" style="display:none;">
+  <div id="list_category_controls" style="text-align:center;"></div>
   <table id="veggieguide_table"></table>
 </div>
-<div style="text-align: center">
-  <button id="map_toggle_button2" style="display: none">Zurück zur Karte</button>
+<div class="wp-block-button is-style-outline" style="text-align: center">
+  <button id="map_toggle_button2" class="wp-block-button__link" style="display: none">Zurück zur Karte</button>
 </div>
-
+<script> 
+// Show Cookie-Banner
+function toggleCookieBanner() {
+   jQuery(document).ready(function ($) {
+      $('.cc-revoke').click();
+      $('.cc-revoke').fadeOut();
+   });
+}
+</script>
+    
 
 
 <script type="text/javascript">
@@ -122,17 +140,17 @@ a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_li
 
 ////////
 // Settings: Paths & names & sizes
-var veganplacesCsvPath = './resources/database/veggiedb.csv'
-var iconsBasePath = './resources/icons/'
+var veganplacesCsvPath = '../wp-content/uploads/2021/02/veganplaces.csv'
+var iconsBasePath = '../wp-content/uploads/2021/02/'
 var guideCategories = ['baeckerei','cafe','eiscafe','foodtruck','beauty','geschaeft','imbiss','restaurant']
 var guideCategoryLabels = ['Bäckerei','Café','Eiscafé','Foodtruck','Beauty','Geschäft','Imbiss','Restaurant']
 var defaultGuideCategory = 'default'
 var centerOfMap = [52.2745, 8.0473]
-var markerIconSize = [60, 90]  
-var markerShadowSize = [60, 90]  
-var markerIconAnchor = [30, 80] 
-var markerShadowAnchor = [30, 80]  
-var markerPopupAnchor = [0, -48] 
+var markerIconSize = [60, 90] // default [100, 150] 
+var markerShadowSize = [60, 90] // default [100, 150] 
+var markerIconAnchor = [30, 80] // default [50, 133] 
+var markerShadowAnchor = [30, 80] // default [50, 133] 
+var markerPopupAnchor = [0, -48] // default [0, -80] 
 var tileLayerLink = 'https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png'
 ////////
 
@@ -180,14 +198,96 @@ document.getElementsByClassName('enable-cookies-warning')[0].style.visibility = 
 // Load csv 
 // var raw_csv = LoadFile(veganplacesCsvPath);
 var raw_csv = `id;latitude;longitude;name;category;description;website;websitedescription;instagram;phone;address;pricing;veganlevel
-1;52.270186;8.044069;Beispiel Restaurant;restaurant;Hier gibt es tolles veganes Essen!;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 123, 49074;1;4
-2;52.278297;8.044425;Beispiel Foodtruck;foodtruck;Bemerkenswerter Foodtruck! Much wow!;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 456, 49074;2;2
-3;52.280750;8.021324;Beispiel Imbiss;imbiss;Leckere Fritten.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 789, 49074;1;3
-4;52.270313;8.051628;Beispiel Friseur;beauty;Vollständig veganer Friseur.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 123, 49074;2;4
-5;52.282187;8.046541;Beispiel Geschaeft;geschaeft;Einige vegane Optionen.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 456, 49074;3;2
-6;52.275895;8.041478;Beispiel Café;cafe;Leckerer Kaffee, einige vegane Kuchen.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 789, 49074;1;3
-7;52.272758;8.048550;Beispiel Eiscafé;eiscafe;Bietet ein paar vegane Eissorten an.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 123, 49074;3;1
-8;52.273972;8.041279;Beispiel Bäckerei;baeckerei;Einiges veganes Gebäck.;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 456, 49074;2;2`
+1;52.27858640;8.03995060;1. Osnabrücker Kartoffelhaus;restaurant;Süßkartoffelcurry;https://www.facebook.com/1-Osnabr%C3%BCcker-Kartoffelhaus-110396079056290/menu/?ref=page_internal;Facebookpage - Speisekarte in Fotos;@osnabruecker_kartoffelhaus;0541 21172;Bierstraße 38, 49074;2;1
+2;52.27907000;8.06053000;African dishes;?;Afrikanische Spezialitäten, Catering;https://african-dishes.de/;Homepage - Speisekarte;@african.dishes;0541 971260;Bohmter Str. 40, 49074;2;2-3
+3;52.27610000;8.04487000;Alex;cafe;Suppe, Salat, Curry;https://www.dein-alex.de/speisekarte-alex-osnabrueck;Homepage - Speisekarte;@alex_osnabrueck;0541 97050370;Nikolaiort 1-2, 49074;2;2
+4;52.27376220;8.04491270;Ali Baba;imbiss;Veganer Döner und mehr.;https://alibaba-os.com/;Homepage - Speisekarte;@alibaba.os;0541 27695;Adolf-Reichwein-Platz 1, 49074;1;2
+5;52.27363000;8.04892000;Ambrosia &Nektar Bioladen;geschaeft;veg. Produkte, Backwaren;https://www.ambrosiabioladen.de/;Homepage;@ambrosia_bioladen/;0541 22458;Oewer De Hase 7-9, 49074;2;3
+6;52.27585000;8.04767000;Ashoka;restaurant;indisch, vegane Gerichte nicht gekennzeichnet, aber Bedienung kennt sich aus;https://ashoka-os.de/;Homepage - Speisekarte als PDF verfügbar;@Ashoka;0541 260505;Herrenteichsstraße 1, 49074;2;2
+7;52.28764000;8.02520000;Ayse's Backstube;cafe;Backwerk;https://www.facebook.com/aysesbackstube/;Facebookpage;@aysesbackstube;0178 7644834;Natruper Str. 130B, 49090;1.5;2
+8;52.26947000;8.11866000;BaanThai;restaurant;Thailändisches Restaurant, vegan möglich;https://www.restaurant-baan-thai.de/;Homepage - Speisekarte als PDF verfügbar;;0541 384877;Poststraße 2b, 49086;;
+9;52.28566660;8.04192100;Bäckerei Coppenrath;cafe;Veganes Gebäck;http://www.conditorei-coppenrath.de/;Homepage;;0541 961420;Bramscher Str. 47, 49088;2;2
+11;52.27563000;8.04445000;Bar Celona;cafe;;https://celona.de/mein-celona/details/cafe-bar-celona-osnabrueck/;Homepage - Speisekarte als PDF verfügbar;@cafebarcelona_osnabrueck;0541 3356956;Nikolaiort 6, 49074;;
+12;52.27467000;8.04404000;Barösta;cafe;Pflanzenmilch;https://www.baroesta.com/speisekarte;Homepage - Speisekarte;@baröstaosnabrück;0541 77066946;Redlingerstraße 1, 49074;2;1
+13;52.30420000;8.07397000;Bei Tony (Ellerstr);restaurant;Italiener mit einer separaten, sehr großen veganen Karte + Lieferdienst;http://ellerstr.bei-tony.com/;Homepage - Speisekarte;@ bei_tony_ellerstr;0541 1504977;Ellerstraße 94, 49088;2;3
+14;52.27927160;8.04328320;Bei Tony (Kontor Hasestraße);restaurant;Italiener mit einer separaten, sehr großen veganen Karte, jeden Sonntag veganer Brunch;http://bei-tony.com/home/;Homepage - Speisekarte;@bei_tony_hasestr;0541 20270808;Hasestraße 26, 49074;2;3
+15;52.27791320;8.04041420;Bistro de la camaleer;imbiss;Orientalische Gerichte, Falafel, viele vegane Gerichte;https://www.bistro-de-la-cameleer.de/kopie-von-shalom;Homepage - Speisekarte;@bistro_de_la_cameleer;0541 750 3935;Bierstraße 15, 49074;1;2
+16;52.27197000;8.05998000;Bob's Pizza und Döner;imbiss;veg. Hot Dog;https://www.facebook.com/BOBS-PizzaDöner-Restaurant-191628997858823/;Facebookpage - Speisekarte in Fotos;;0541 35746731;Theodor-Heuss-Platz 10, 49074;1;1
+17;52.27370000;8.04449000;Bottled;cafe;Tacos, Frühstück;https://www.facebook.com/bottled.os/menu/;Facebookpage - Speisekarte in Fotos;@bottled.os;0541 3504504;Osterberger Reihe 10, 49074;2;2
+18;52.27300000;8.05030000;Buddha Bowl;restaurant;Auf Nachfrage vegan - nicht gekennzeichnet?;https://www.facebook.com/buddhabowlosnabrueck/;Facebookpage - Speisekarte in Fotos;@Buddha Bowl Osnabrück;0541 20279520;Neumarkt 1a, 49074;2;1.5
+19;52.27744410;8.04218450;Caféteria Trattoria am Markt;restaurant;Italiener mit einer seperaten, großen veganer Karte, bio;https://trattoria-os.de/lieferkarte/;Homepage - Lieferkarte;@grani_alimentari;0541 21321;Markt 8, 49074;2.5;3
+20;52.28966000;8.02103000;Coffee@work;cafe;Suppen, Quiche;https://www.facebook.com/CafeatworkOS/;Facebookpage;@cafeatwork_osna;0178 9174967;Artilleriestraße 1, 49076;2;2
+21;52.27433000;8.04393000;Das Ökolädchen;geschaeft;biologische Produkte, Kleidung, Hygieneartikel;https://oekolaedchen.de/;Homepage;@dasoekolaedchen;0541 40770075;Redlingerstraße 4, 49074;2;3
+22;52.27391000;8.04488000;Dean und David;imbiss;Bowls, Wraps;https://deananddavid.de/osnabrueck-kamp/;Homepage;@dean_and_david;0541 91197569;Osterberger Reihe 2-8, 49074;2.5;2
+23;52.27059000;8.03137000;denns (Weidencarée);geschaeft;Bioladen, veg. Produkte und Backwaren;https://www.denns-biomarkt.de/osnabrueck-weidenstr-20/marktseite/;Homepage;@dennsbiomarkt;0541 40669186;Weidenstraße 20, 49080;2;3
+24;52.24812000;8.06306000;denns (Iburgerstr.);geschaeft;Bioladen, veg. Produkte und Backwaren;https://www.denns-biomarkt.de/osnabrueck-iburger-str-223/marktseite/;Homepage;@dennsbiomarkt;0541 99984460;Iburger Str. 223, 49082;2;3
+25;52.27589140;8.04319050;die Laterne;restaurant;Auf Nachfrage vegan;https://dielaterne.de/speisekarte/;Homepage - Speisekarte;@dielaterne490;0541 67375892;Krahnstraße 22, 49074;2;1
+26;52.27270000;8.06083000;Ditsch;baeckerei;Bretzeln;https://www.ditsch.de/de/;Homepage;@brezel_ditsch_skylineplazaffm;;Theodor-Heuss-Platz 2, 49074;1;1
+27;52.26600000;8.05349000;Dominos Pizza Osnabrück;imbiss;veg. Pizza, Pizzabrötchen mit veg. Schmelz;https://www.dominos.de/speisekarte;Homepage - Speisekarte;@osnabrueck_dominos;0541 1209933;Rosenpl. 1, 49074;2;2
+28;52.24064000;8.03237000;Eisberg Eisdiele;eiscafe;Eisbecher, Törtchen, Schoko-Sorbet;https://www.facebook.com/EisBerg.cafe/;Facebookpage;@eisbergosnabrueck;0541 20068372;Hermann-Ehlers-Straße 7, 49082;2;3
+29;52.27598000;8.04138000;Eiscafé Fontanella (Dielingerstr.);eiscafe;Sorbet, Zartbitterschokoladeneis;https://www.fontanella-eiscafe.de/;Homepage;@fontanellaeiscafe1963;0541 38094428;Dielingerstraße 1-6, 49074;2;2
+30;52.27598270;8.04137230;Eiscafé Fontanella (Krahnstr.);eiscafe;Sorbet, Zartbitterschokoladeneis;https://www.fontanella-eiscafe.de/;Homepage;@eiscafefontanella1963;05401 25427;Krahnstraße 50, 49074;2;2
+31;52.27442000;8.04413000;Eiscafé Giovanni;eiscafe;Eis;https://eiscafegiovanni.de/;Homepage - Speisekarte;@giovannigelatowaffles;05471 2620;Redlingerstraße 13, 49074;2;2
+32;52.29119000;8.01933000;Eiscafé Sion;eiscafe;Bio, veg. Optionen;https://www.eiscafe-sion.de/;Homepage;@italienisches_eiscafe_sion;0152 53098543;Natruper Str. 176, 49090;;
+33;52.27402000;8.04409000;Elle's coffee and soulfood;cafe;Smoothiebowls, Kuchen;https://elles-coffee.de/;Homepage - Speisekarte als PDF verfügbar;@elles_coffeeandsoulfood_;;Redlingerstraße 9, 49074;2;3
+34;52.27431000;8.04566000;Extrablatt;cafe;Burger, Wrap, Fries;https://cafe-extrablatt.de/extras/veggie-karte;Homepage - Speisekarte;@cafe_extrablatt.osnabrueck;0541 260639;Jürgensort 4, 49074;2;1
+35;;;Frozen Vegan;foodtruck;Foodtruck mit veg. Softeis;https://www.facebook.com/veganesSofteis/;Facebookpage;@frozen.vegan;;;;
+36;52.26291310;8.06083680;GoPizza&Burger;imbiss;Pizza, Pizzabrötchen mit veganem Käse;https://www.go-pizza.net/menue;Homepage - Speisekarte;@GoPizza & Burger;0541 65200;Meller Str. 75, 49084;2;2
+37;52.27506000;8.04677000;Green Bistro bei L&T;imbiss;veg. Optionen;https://www.l-t.de/green-bistro-2og;Homepage;@lengermann.trieschmann;0541 331130;Große Str. 27-32, 49074;2;1.5
+38;52.27528000;8.04570000;Green Deli;imbiss;Bowls, Wraps;https://www.facebook.com/Green.Deli.OS/menu;Facebookpage - Speisekarte in Fotos;@_green.deli;0541 97054786;Große Str. 40, 49074;2;2
+39;52.27139790;8.03524970;Green hair and beauty (Martinistr.);beauty;Bio-Friseur, veg. Haarprodukte, inkl. Kaffee/Tee, Smoothie, Snacks;https://www.greenhairandbeauty.de/;Homepage;@greenhairandbeauty_;0541 97005620;Martinistraße 37, 49078;3;3
+40;52.27838000;8.04370000;Green hair and beauty (Hasestraße);beauty;Bio-Friseur, veg. Haarprodukte, inkl. Kaffee/Tee, Smoothie, Snacks;https://www.greenhairandbeauty.de/;Homepage;@greenhairandbeauty_;0541 44013961;Hasestraße 42, 49074;3;3
+41;52.27258000;8.04646000;GundolfS;cafe;vegane Suppe;https://gundolfs.de/unsere-speisekarte/;Homepage - Speisekarte;@gundolfs_;0541 5806960;Grüner Brink 9, 49074;2;1
+42;52.28106000;8.04134000;Hautnah - natürlich schön;beauty;;https://www.facebook.com/hautnahnatuerlichschoen/;Facebookpage;@hautnah_natuerlichschoen;0541 44021314;Hasetorwall 16, 49076;;
+43;52.27365000;8.04432000;Henne;cafe;veg. Frühstück;https://www.henne-cafebar.de/de/0__2_1_65/speisekarte.html;Homepage - Speisekarte als PDF verfügbar;@henne_cafebar_os;0541 76099139;Osterberger Reihe 12, 49074;2;1
+44;52.27267930;8.03444320;Herr von Butterkeks;cafe;Mittagstisch, Frühstück, Kuchen;https://www.facebook.com/HerrvonButterkeks;Facebookpage - Speisekarte in Fotos;@herrvonbutterkeks;0541 80019050;Augustenburger Str. 2, 49078;2;2
+45;52.27365000;8.04411000;Isaan Thaipas Bar;;???;;;;0541 21141;Redlingerstraße 7-8, 49074;;
+47;52.27091000;8.02813000;Le Feu (Osnabrück;restaurant;veg. Flammkuchen, all you can eat;https://www.lefeu.de/;Homepage - Speisekarte als PDF verfügbar;@lefeu_flammkuchen;0541 60079009;Martinistraße 94, 49078;2;2
+48;52.30244000;8.12635000;Le Feu (Belm);restaurant;veg. Flammkuchen, all you can eat;https://www.lefeu.de/;Homepage - Speisekarte als PDF verfügbar;@lefeu_flammkuchen;05406 8159933;Marktring 17, 49191 Belm;2;2
+49;52.27699000;8.04346000;Lieblingscafé;cafe;Pflanzenmilch;http://www.unser-lieblingskaffee.de/;Homepage;;0541 99899200;Domhof 4, 49074;2;1
+50;52.27377000;8.04405900;Mellows;imbiss;Suppen, Quiche + Kuchen;https://www.mellows-soups.de/angebote/;Homepage - Speisekarte;@mellows_soups;0541 58052799;Redlingerstraße 7/8, 49074;2;3
+51;52.27048000;8.04543000;Mensa Innenstadt;imbiss;wechselnde Hauptgerichte, Beilagen, Eintöpfe, Salate, oder auch Desserts;https://www.studentenwerk-osnabrueck.de/de/essen/speiseplaene.html;Homepage - Speisekarte;;;Ritterstraße 10, 49074;2;2
+52;52.28438000;8.02280000;Mensa Westerberg;imbiss;wechselnde Hauptgerichte, Beilagen, Eintöpfe, Salate, oder auch Desserts;https://www.studentenwerk-osnabrueck.de/de/essen/speiseplaene.html;Homepage - Speisekarte;;;Barbarastraße 20, 49076;2;2
+53;52.30033000;8.14061000;Meyerhof Belm;geschaeft;Bioladen;https://meyerhof-belm.de/;Homepage;@meyerhof_belm;05406 3128;Belmer Str. 11, 49191 Belm;2;3
+54;52.27101000;8.03124000;Mobee Bistro;restaurant;Burger, Curry;https://www.mobee-os.de/vegan-vegetarisch-bistro/;Homepage - Speisekarte als PDF verfügbar;@mobees_bistro;0541 94137335;Martinistraße 67 A, 4908;2;2
+55;52.29021000;8.02530000;Mundfein Pizzawerkstatt;imbiss;Pizza, Teigtaschen mit veganem Käse;https://www.mundfein.de/osnabrueck.html;Homepage - Speisekarte als PDF verfügbar;@mundfein;0541 32 4706 32;Pagenstecherstraße 67, 49090;2;3
+56;52.27631000;8.04268000;Pans Kitchen;imbiss;Bowls, Wraps;http://pans-kitchen.de/menu-page/;Homepage - Speisekarte;@pans_kitchen_food_and_more;;Krahnstraße 42, 49074;2;2
+57;52.27550560;8.04434100;Peter Pane;restaurant;Burger, Pommes, Nachtisch;https://www.peterpane.de/speisekarte/;Homepage - Speisekarte;@peterpane_burgergrill;0541 99868740;Nikolaiort 5A, 49074 ;2;3
+58;52.27099780;8.03141110;Pizzamici;restaurant;Pizza;https://pizzamici.de/#speisekarte;Homepage - Speisekarte;@pizz_a_mici;0541 3359950;Martinistraße 67A, 49080;2;2
+59;52.27642000;8.03747000;Planeta Sol;cafe;Brasilianische Speisen;http://www.planetasol.de/menu;Homepage - Speisekarte;@planetasol_osnabruck;0541 685238;Bergstraße 8, 49076;2;1
+60;52.27611000;8.04378000;PollyEsther's;cafe;veg. Frühstück, Burger;https://www.pollyesthers.de/;Homepage - Speisekarte als PDF verfügbar;@pollyesthers_os;0541 7607525;Domhof 7c, 49074;2;2
+61;52.27569000;8.04615000;Puzzles Café & Gelateria;eiscafe;Eis (wechselnde vegane Sorten);https://www.facebook.com/gelateriadagianni;Facebookpage;@puzzlescafe_osnabrueck;0541 20087664;Herrenteichsstraße 24, 49074;2;2
+62;52.27433000;8.04415000;Redlinger's Deli;cafe;;https://www.facebook.com/Redlingers/;Facebookpage;@redlingers_deli;0541 40996914;Redlingerstraße 11, 49074;2;2
+63;52.27592000;8.04361000;Reformhaus Bacher (Krahnstr.);geschaeft;Bioladen, veg. Produkte und Backwaren;https://reformhaus-bacher.de/;Homepage;@reformhausbacher;0541 214 64;Krahnstraße 33, 49074;2;3
+64;52.27174000;8.04937000;Reformhaus Bacher (Johannisstr.);geschaeft;Bioladen, veg. Produkte und Backwaren;https://reformhaus-bacher.de/;Homepage;@reformhausbacher;0541 21931;Johannisstraße 71-72, 49074;2;3
+65;52.27891000;8.03704000;Remarcque;restaurant;;https://www.viennahouse.com/de/remarque-osnabrueck/das-hotel/uebersicht.html;Homepage;;0541 12098848;Natruper-Tor-Wall 1, 49076;;
+66;52.27287000;8.04773000;Royal donuts;baeckerei;veg. Donuts;https://royal-donuts.de/collections/all/royal-donuts;Homepage - Speisekarte;@royaldonuts_osnabrueck;0541 40759110;Neumarkt 8, 49074;2;2
+67;52.27474000;8.04407000;Saro Tapas, Bar & Lounge;restaurant;eigentlich nur gebratenes Gemüse...?;https://saro-tapas.de/#speisekarte;Homepage - Speisekarte als PDF verfügbar;@saro.tapas;0541 80019677;Kamp 8, 49074;;
+68;52.26921000;8.04852000;Sausalitos;restaurant;Burger+Cocktails;https://www.sausalitos.de/stores/osnabrueck;Homepage - Speisekarte;@sausalitos_osnabrueck_official;0541 2023660;Kommenderiestraße 32-34, 49074;2;3
+69;52.27336980;8.04431100;Schlecks;eiscafe;Baukasten-System für Eis. Bietet vegane Waffeln und viele vegane Eissorten und Toppings.;https://www.schlecks.com/lets-schlecks/;Homepage - Speisekarte als PDF verfügbar;@schlecks_osnabrueck;0541 99895268;Alte Münze 25a, 49074;2;3
+70;52.28058000;8.04376610;Shock records and coffee;cafe;Kaffee;https://shock-records.de/das-cafe/;Homepage;@shockrecordsandcoffee;0541 61357;Hasestraße 66, 49074;2;2
+71;52.27680000;8.04140000;Sophies;cafe;Brot, veganer Kuchen;https://www.tantesophiesbackstube.de/;Homepage;@tantesophiesbackstube;0541 60960;Krahnstraße 4, 49074;;
+72;52.27765000;8.04280000;Stadtgaleriecafé;cafe;Kuchen, Kaffee;https://www.os-hho.de/hho-in-wirtschaft-und-gesellschaft/stadtgaleriecafe-contor/;Homepage;;0541 35023529;Markt 13, 49074;2;1
+73;52.27456430;8.04401610;Stadtkoch Pommes-Manufaktur;imbiss;Pommes & diverse vegane Soßen ;https://www.facebook.com/stadtkoch.bio.pommes.manufaktur/;Facebookpage;@stadtkoch4.0;0162 9368746;Redlingerstraße 3, 49074;2;3
+74;52.29888000;8.06019000;Superbiomarkt (Mönkedieckstr.);geschaeft;Bioladen, veg. Produkte und Backwaren;https://www.superbiomarkt.de/osnabrueck-dodesheide/;Homepage;@superbiomarkt;0541 77086383;Mönkedieckstraße 14, 49088;2;3
+75;52.27374000;8.02154000;Superbiomarkt (Lotter Str.);geschaeft;Bioladen, veg. Produkte und Backwaren;https://www.superbiomarkt.de/osnabrueck-westerberg/;Homepage;@superbiomarkt;0541 40669277;Lotter Str. 75, 49078;2;3
+76;52.25543000;7.99132000;Superbiomarkt (Lengericher Landstr.);geschaeft;Bioladen, veg. Produkte und Backwaren;https://www.superbiomarkt.de/osnabrueck-hellern/;Homepage;@superbiomarkt;0541 442454;Lengericher Landstraße 34a, 4907;2;3
+77;52.27546000;8.04167000;Taj Mahal;restaurant;indisch, vegane Gerichte nicht gekennzeichnet, aber Bedienung kennt sich aus;https://tajmahalosnabrueck.de/unser-menu/;Homepage - Speisekarte;@taj_mahal_osnabrueck;0541 3574447;Dielingerstraße 29, 49074;2;3
+78;52.28021000;8.04373000;Taj Mahal;restaurant;indisch, vegane Gerichte nicht gekennzeichnet, aber Bedienung kennt sich aus;https://tajmahalosnabrueck.de/unser-menu/;Homepage - Speisekarte;@taj_mahal_osnabrueck;0541 33016606;Hasestraße 62, 49074;2;3
+79;52.27819210;8.04338370;tara unverpackt genießen;geschaeft;Einkaufen, veganes Gebäck+Kaffee;https://www.tara-unverpackt.de/;Homepage;@tara_unverpackt_geniessen;0541 335 768 47;Hasestraße 37, 49074;2;3
+80;52.32289000;7.95432000;TenneseeMountain;restaurant;Burgerrestaurant, vegane Burger;https://www.tennessee-mountain.de/american-taste/;Homepage - Speisekarte als PDF verfügbar;@tennesseemountainofficial;05404 98383;Achmerstraße 2, 49504 Lotte;2;1
+81;52.28859000;8.02991000;The Bulldog (Pagenstecherstr.);restaurant;1 veg. Burger, Vegane Poutine;https://www.the-bulldog.de/city/;Homepage - Speisekarte als PDF verfügbar;@thebulldog_osnabrueck;0541 6855036;Pagenstecherstraße 48, 49090;2;1
+82;52.27566000;8.04643000;The Bulldog (Herrenteichsstr.);restaurant;1 veg. Burger, Vegane Poutine;https://www.the-bulldog.de/page/;Homepage - Speisekarte als PDF verfügbar;@thebulldog_osnabrueck;0541 20237000;Herrenteichsstraße 26, 49074;2;1
+83;52.27586000;8.04626000;Vapiano;restaurant;Nudelgerichte, Pizza;https://www.vapiano-restaurant.de/de/restaurants/osnabrueck-herrenteichstrasse;Homepage - Speisekarte als PDF verfügbar;@vapiano_muenster_osnabrueck;0541 3303655;Herrenteichsstraße 7-13, 49074;2;3
+84;;;viele Sushi-Bars (mit aufnehmen?);;;;;;;;;
+85;52.30147350;8.05969970;Waffel #1;foodtruck;Foodtruck mit Waffeln, Crepes und Falafeln;https://www.facebook.com/Waffel1/;Facebookpage;;;Neumarkt 14, 49074;1;2
+86;52.27690000;8.04043000;Walhalla;restaurant;;https://www.hotel-walhalla.de/speisekarte/;Homepage - Speisekarte;;0541 22244;Kleine Gildewart 11, 49074;;
+87;52.27781000;8.04082000;Weltladen;geschaeft;faire, veg. Produkte;http://weltladen-osnabrueck.de/;Homepage;;0541 3491142;Bierstraße 29, 49074;2;3
+88;52.27209000;8.04689000;Wonderwaffel;;;;;;;Neuer Graben 13, 49074;;
+89;52.27554590;8.04628320;You Shi Me;imbiss;Sushi;https://www.youshime.de/;Homepage - Speisekarte als PDF verfügbar;@youshime_de;0541 97048664;Große Str. 40, 49074;2;2
+90;52.26761650;8.05827660;Zauber von OS;restaurant;Burger;http://zauber-os.de/speisen/;Homepage - Speisekarte;@zauber_von_os;0541 20277900;Dammstraße 2, 49084;2;2
+91;52.27306770;8.04751580;Zum Drehspieß;imbiss;Veganer Döner, vegane Currywurst und mehr.;https://de-de.facebook.com/zumdrehspiess/;Facebookpage - Speisekarte in Fotos;@zumdrehspiess;0541 99867030;Große Hamkenstraße 19, 49074;1;3
+`
 
 
 // Construct dictionaries
@@ -464,6 +564,14 @@ function CloseCategoryList() {
 
 
 
+
+
+
+
+
+
+
+
 var listToggleButton = document.getElementById("list_toggle_button");
 var mapToggleButton = document.getElementById("map_toggle_button");
 var mapToggleButton2 = document.getElementById("map_toggle_button2");
@@ -489,26 +597,60 @@ function SwitchToMapView() {
   document.getElementById("leaflet_map").style.display = "block";
   document.getElementById("veggieguide_list").style.display = "none";
   document.getElementById("leaflet_map").scrollIntoView(false);
+  guideMap.invalidateSize() // make sure tiles are reloaded after moving the map 
 }
 
 function mapLinkHandler(event) {
   let id = event.target.dataset.id;
   SwitchToMapView();
   allMarkers[id].openPopup();
+  guideMap.invalidateSize() // make sure tiles are reloaded after moving the map 
 }
 
 function detailsDisplayHandler(event) {
+
   let details = detailsRowList[event.target.dataset.id];
+
+  let useParent = false;
+
+  // in case of pressing name text rather than td, use parent, i.e. td 
+  if (typeof details == 'undefined') {
+    details = detailsRowList[event.target.parentNode.dataset.id]; 
+    useParent = true;
+  }
+
+
   if (details.style.display == "none") {
     details.style.display = "table-row";
+    // change plus sign to a minus sign & increase font weight 
+    if (useParent) {
+      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "-";
+      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "bold"; 
+      event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
+    } else {
+      event.target.getElementsByTagName('div')[1].innerHTML = "-";
+      event.target.getElementsByTagName('div')[0].style.fontWeight = "bold"; 
+      event.target.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
+    }
+    
   } else {
     details.style.display = "none";
+    // change minus sign to a plus sign 
+    if (useParent) {
+      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "+";
+      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "normal";
+      event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "normal";
+    } else {
+      event.target.getElementsByTagName('div')[1].innerHTML = "+";
+      event.target.getElementsByTagName('div')[0].style.fontWeight = "normal";
+      event.target.getElementsByTagName('div')[1].style.fontWeight = "normal";
+    }
   }
 }
 
 function constructDetailsText(data) {
   let detailsText = "";
-  detailsText += '<div style="font-weight: bold">' + data['name'] + '</div>'
+  //detailsText += '<div style="font-weight: bold">' + data['name'] + '</div>'
   detailsText += data['description'] + '<br><br>'
   if (categoryHasData(data['website']) && categoryHasData(data['websitedescription'])) // website info if provided 
   {
@@ -561,6 +703,7 @@ function constructDetailsText(data) {
   return detailsText;
 }
 
+
 function initRowsStorageArrays() {
   rowsByCategory[defaultGuideCategory] = [];
   detailsRowsByCategory[defaultGuideCategory] = [];
@@ -586,9 +729,14 @@ for (var i = 0; i < allMarkerData.length; i++) {
 
 
   let name = document.createElement("td");
-  name.innerHTML = allMarkerData[i].name;
+  name.innerHTML = '<div style="display:inline;">' +  // construct name with expansion indicator
+    allMarkerData[i].name + '</div>' + '<div style="display: inline; float:right; padding-right:1em;">' +  '+'  + '</div>';
+  
+  name.dataset.id = i;
+  name.style.cursor = "pointer"
+  name.addEventListener("click", detailsDisplayHandler,true) // activate details handler on click of name 
 
-  let detailsLinkTd = document.createElement("td");
+  /* let detailsLinkTd = document.createElement("td");
   let detailsLink = document.createElement("div");
   detailsLink.innerHTML = "Details";
   detailsLink.dataset.id = i;
@@ -596,18 +744,20 @@ for (var i = 0; i < allMarkerData.length; i++) {
   detailsLink.style.cursor = "pointer";
   detailsLink.classList.add("color-accent");
   detailsLink.style.textDecoration = "underline";
+  
 
   detailsLinkTd.appendChild(detailsLink);
-
+  */ 
 
   let mapLinkTd = document.createElement("td");
   if (!(!guideCategories.includes(allMarkerData[i]['category'])) && allMarkerData[i]['category'] != defaultGuideCategory)
   {
     let mapLink = document.createElement("div");
-    mapLink.innerHTML = "in Karte zeigen";
+    mapLink.innerHTML = "Auf der Karte zeigen";
     mapLink.dataset.id = buttonId;
     mapLink.addEventListener("click", mapLinkHandler, true);
     mapLink.style.cursor = "pointer";
+    //mapLink.style.all = "revert";
     mapLink.classList.add("color-accent");
     mapLink.style.textDecoration = "underline";
 
@@ -615,16 +765,17 @@ for (var i = 0; i < allMarkerData.length; i++) {
     buttonId++;
   }
 
-  let websiteLinkTd = document.createElement("td");
+  /*let websiteLinkTd = document.createElement("td");
   let websiteLink = document.createElement("a");
   websiteLink.href = allMarkerData[i].website;
   websiteLink.innerHTML = allMarkerData[i].websitedescription;
   websiteLinkTd.appendChild(websiteLink);
+  */
 
   currentRow.appendChild(name);
-  currentRow.appendChild(detailsLinkTd);
+  //currentRow.appendChild(detailsLinkTd);
   currentRow.appendChild(mapLinkTd);
-  currentRow.appendChild(websiteLinkTd);
+  //currentRow.appendChild(websiteLinkTd);
 
   currentRow.className = "table-row-cat-" + allMarkerData[i].category;
 
@@ -636,14 +787,16 @@ for (var i = 0; i < allMarkerData.length; i++) {
   let currentRowDetails = document.createElement("tr");
   let detailsTd = document.createElement("td");
 
+  // detailsTd.innerHTML = allMarkerTexts[buttonId-1];
   detailsTd.innerHTML = constructDetailsText(allMarkerData[i]);
-  detailsTd.colSpan = 4;
+  detailsTd.colSpan = 2; //4
   currentRowDetails.style.display = "none";
   currentRow.className = "table-row-cat-" + allMarkerData[i].category;
 
   detailsRowList[i] = currentRowDetails;
   detailsRowsByCategory[allMarkerData[i].category].push(currentRowDetails);
   allTableDetailsRows.push(currentRowDetails);
+  // detailsLink.dataset.detailsRow = currentRowDetails;
 
   currentRowDetails.appendChild(detailsTd);
   tableNode.appendChild(currentRowDetails);
@@ -656,7 +809,7 @@ var categoryAllCheckbox;
 var categoryCheckboxes = [];
 
 function selectAllCategories(event) {
-
+  
   if (event.target.checked) {
     // if checked -> check all categories
     for (let i = 0; i < categoryCheckboxes.length; i++) {
@@ -669,11 +822,15 @@ function selectAllCategories(event) {
     }
   }
 
-  for (let i = 0; i < allTableRows.length; i++) {
+  // let allElements = document.getElementById("veggieguide_table").childNodes;
+  // for (var i = 0; i < allElements.length; i++) {
+  //   allElements[i].style.display = event.target.checked ? "table-row" : "none";
+  // }
+  for (var i = 0; i < allTableRows.length; i++) {
     allTableRows[i].style.display = event.target.checked ? "table-row" : "none";
   }
   if (!event.target.checked) {
-    for (let i = 0; i < allTableDetailsRows.length; i++) {
+    for (var i = 0; i < allTableDetailsRows.length; i++) {
       allTableDetailsRows[i].style.display = "none";
     }
   }
@@ -685,6 +842,21 @@ function selectCategory(event) {
     categoryAllCheckbox.checked = false;
   }
 
+  // let affectedElements = document.getElementsByClassName("table-row-cat-" + event.target.value);
+  // console.log(event.target.value);
+  // console.log(affectedElements);
+  // // for (let tRow in affectedElements) {
+  // for (let i = 0; i < affectedElements.length; i++) {
+  //   let tRow = affectedElements[i];
+  //   console.log(tRow);
+  //   if (event.target.checked) {
+  //     tRow.style.display = "table-row";
+  //   } else {
+  //     tRow.style.display = "none";
+  //   }
+  // }
+
+  // let affectedElements = rowsByCategory[event.target.value].concat(detailsRowsByCategory[event.target.value]);
   let affectedElements = rowsByCategory[event.target.value];
   for (let i = 0; i < affectedElements.length; i++) {
     let tRow = affectedElements[i];
@@ -743,6 +915,7 @@ for (let i = 0; i < guideCategories.length; i++) {
   categoryControls.appendChild(labelledCheckbox);
   categoryCheckboxes.push(catCheckbox);
 }
+
 
 
 
