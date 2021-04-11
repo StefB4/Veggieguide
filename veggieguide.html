@@ -487,7 +487,7 @@ function CloseCategoryList() {
 /////////////////
 
 
-// Inits 
+// Inits
 var listToggleButton = document.getElementById("list_toggle_button");
 var mapToggleButton = document.getElementById("map_toggle_button");
 var mapToggleButton2 = document.getElementById("map_toggle_button2");
@@ -497,16 +497,16 @@ var detailsRowsByCategory = {};
 var allTableRows = [];
 var allTableDetailsRows = [];
 
-// Display List instead of Map 
+// Display List instead of Map
 function SwitchToListView() {
   listToggleButton.style.display = "none";
   mapToggleButton.style.display = "inline-block";
   mapToggleButton2.style.display = "inline-block";
   document.getElementById("leaflet_map").style.display = "none";
-  document.getElementById("veggieguide_list").style.display = "block";  
+  document.getElementById("veggieguide_list").style.display = "block";
 }
 
-// Display Map instead of List 
+// Display Map instead of List
 function SwitchToMapView() {
   mapToggleButton.style.display = "none";
   mapToggleButton2.style.display = "none";
@@ -514,35 +514,35 @@ function SwitchToMapView() {
   document.getElementById("leaflet_map").style.display = "block";
   document.getElementById("veggieguide_list").style.display = "none";
   document.getElementById("leaflet_map").scrollIntoView(false);
-  guideMap.invalidateSize() // make sure tiles are reloaded after moving the map 
+  guideMap.invalidateSize() // make sure tiles are reloaded after moving the map
 }
 
-// Open a marker on the Map 
+// Open a marker on the Map
 function mapLinkHandler(event) {
   let id = event.target.dataset.id;
   SwitchToMapView();
   allMarkers[id].openPopup();
-  guideMap.invalidateSize() // make sure tiles are reloaded after moving the map 
+  guideMap.invalidateSize() // make sure tiles are reloaded after moving the map
 }
 
-// Expand details in the list view  
+// Expand details in the list view
 function detailsDisplayHandler(event) {
 
   let useParent = false;
   let details = detailsRowList[event.target.dataset.id];
   
-  // in case of pressing the name text rather than table cell, use parent, i.e. table cell td 
+  // in case of pressing the name text rather than table cell, use parent, i.e. table cell td
   if (typeof details == 'undefined') {
-    details = detailsRowList[event.target.parentNode.dataset.id]; 
+    details = detailsRowList[event.target.parentNode.dataset.id];
     useParent = true;
   }
 
-  // Show details 
+  // Show details
   if (details.style.display == "none") {
     details.style.display = "table-row";
-    if (useParent) { 
+    if (useParent) {
       event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "-"; // + -> -   
-      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "bold"; // increase font weight 
+      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "bold"; // increase font weight
       event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
     } else {
       event.target.getElementsByTagName('div')[1].innerHTML = "-";
@@ -550,11 +550,11 @@ function detailsDisplayHandler(event) {
       event.target.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
     }
     
-  } else { // hide details 
+  } else { // hide details
     details.style.display = "none";
     if (useParent) {
       event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "+"; // - -> +
-      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "normal"; // decrease font weight 
+      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "normal"; // decrease font weight
       event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "normal";
     } else {
       event.target.getElementsByTagName('div')[1].innerHTML = "+";
@@ -564,11 +564,11 @@ function detailsDisplayHandler(event) {
   }
 }
 
-// Create the details text for an entry 
+// Create the details text for an entry
 function constructDetailsText(data) {
   let detailsText = "";
   detailsText += data['description'] + '<br><br>'
-  if (categoryHasData(data['website']) && categoryHasData(data['websitedescription'])) // website info if provided 
+  if (categoryHasData(data['website']) && categoryHasData(data['websitedescription'])) // website info if provided
   {
     detailsText += 'Website: <a class="leaflet_link" href="' + data['website'] + '" target="_blank">' + data['websitedescription'] + '</a><br>';
   }
@@ -619,7 +619,8 @@ function constructDetailsText(data) {
   return detailsText;
 }
 
-// Init empty arrays 
+// Init empty arrays
+// Store all table rows and their detail rows sorted by categories to enable filtering the list by category
 function initRowsStorageArrays() {
   rowsByCategory[defaultGuideCategory] = [];
   detailsRowsByCategory[defaultGuideCategory] = [];
@@ -629,37 +630,40 @@ function initRowsStorageArrays() {
   }
 }
 
-// Get buttons and main list table 
+// Bind button functions
 listToggleButton.onclick = SwitchToListView;
 mapToggleButton.onclick = SwitchToMapView;
 mapToggleButton2.onclick = SwitchToMapView;
+// Get main list table
 var tableNode = document.getElementById("veggieguide_table");
 
-// Init 
+// Init
 initRowsStorageArrays();
 
-// Create list rows 
+// Create list rows
 var buttonId = 0;
-var elementId = 0;
 for (var i = 0; i < allMarkerData.length; i++) {
 
-  // Init current row 
+  // Init current row
   let currentRow = document.createElement("tr");
 
-  // Name 
+  // Name
   let name = document.createElement("td");
   name.innerHTML = '<div style="display:inline;">' +  // construct name with expansion indicator
     allMarkerData[i].name + '</div>' + '<div style="display: inline; float:right; padding-left:1em; padding-right:1em;">' +  '+'  + '</div>';
   name.dataset.id = i;
   name.style.cursor = "pointer"
-  name.addEventListener("click", detailsDisplayHandler,true) // activate details handler on click of name 
+  name.addEventListener("click", detailsDisplayHandler,true) // activate details handler on click of name
 
-  // Map link 
+  // Map link
   let mapLinkTd = document.createElement("td");
+  // create a button with a link to the map for each element with valid category
   if (!(!guideCategories.includes(allMarkerData[i]['category'])) && allMarkerData[i]['category'] != defaultGuideCategory)
   {
     let mapLink = document.createElement("div");
     mapLink.innerHTML = "Auf der Karte zeigen";
+    // a separate button id is used to ensure a correct mapping of the button to the corresponding marker in the map
+    // (because there might be elements in the list without a marker)
     mapLink.dataset.id = buttonId;
     mapLink.addEventListener("click", mapLinkHandler, true);
     mapLink.style.cursor = "pointer";
@@ -669,7 +673,7 @@ for (var i = 0; i < allMarkerData.length; i++) {
     buttonId++;
   }
 
-  // Add constructed row 
+  // Add constructed row
   currentRow.appendChild(name);
   currentRow.appendChild(mapLinkTd);
   currentRow.className = "table-row-cat-" + allMarkerData[i].category;
@@ -681,7 +685,7 @@ for (var i = 0; i < allMarkerData.length; i++) {
   let currentRowDetails = document.createElement("tr");
   let detailsTd = document.createElement("td");
   detailsTd.innerHTML = constructDetailsText(allMarkerData[i]);
-  detailsTd.colSpan = 2; 
+  detailsTd.colSpan = 2;
   currentRowDetails.style.display = "none";
   currentRow.className = "table-row-cat-" + allMarkerData[i].category;
   detailsRowList[i] = currentRowDetails;
@@ -697,9 +701,9 @@ var categoryControls = document.getElementById("list_category_controls");
 var categoryAllCheckbox;
 var categoryCheckboxes = [];
 
-// Select all categories in the selection menu 
+// Select all categories in the selection menu
 function selectAllCategories(event) {
-  
+
   if (event.target.checked) {
     // if checked -> check all categories
     for (let i = 0; i < categoryCheckboxes.length; i++) {
@@ -712,32 +716,47 @@ function selectAllCategories(event) {
     }
   }
 
-  for (var i = 0; i < allTableRows.length; i++) {
+  // show/hide all items in the list
+  for (let i = 0; i < allTableRows.length; i++) {
     allTableRows[i].style.display = event.target.checked ? "table-row" : "none";
   }
+  // if unchecked -> hide all details
   if (!event.target.checked) {
-    for (var i = 0; i < allTableDetailsRows.length; i++) {
+    for (let i = 0; i < allTableDetailsRows.length; i++) {
       allTableDetailsRows[i].style.display = "none";
+      // change minus sign to a plus sign & normalize font weight
+      allTableRows[i].getElementsByTagName('div')[1].innerHTML = "+";
+      allTableRows[i].getElementsByTagName('div')[1].style.fontWeight = "normal";
+      allTableRows[i].getElementsByTagName('div')[0].style.fontWeight = "normal";
     }
   }
 }
 
-// Select single category in the selection menu 
+// Select single category in the selection menu
 function selectCategory(event) {
   if (!event.target.checked) {
     // if unchecked -> uncheck 'all'-checkbox
     categoryAllCheckbox.checked = false;
   }
 
+  // update visibility of elements according to changed category selection
   let affectedElements = rowsByCategory[event.target.value];
   for (let i = 0; i < affectedElements.length; i++) {
     let tRow = affectedElements[i];
     if (event.target.checked) {
+      // show elements of selected categories
       tRow.style.display = "table-row";
     } else {
+      // hide elements of unselected categories
       tRow.style.display = "none";
+      // change minus sign to a plus sign & normalize font weight
+      tRow.getElementsByTagName('div')[1].innerHTML = "+";
+      tRow.getElementsByTagName('div')[1].style.fontWeight = "normal";
+      tRow.getElementsByTagName('div')[0].style.fontWeight = "normal";
     }
   }
+
+  // hide details of elements of unselected categories
   affectedElements = detailsRowsByCategory[event.target.value];
   for (let i = 0; i < affectedElements.length; i++) {
     if (!event.target.checked) {
@@ -746,7 +765,7 @@ function selectCategory(event) {
   }
 }
 
-// Create the select all checkbox 
+// Create the select all checkbox
 let checkboxAll = document.createElement("input");
 checkboxAll.type = "checkbox";
 checkboxAll.id = "all";
@@ -767,7 +786,7 @@ labelledCheckbox.appendChild(labelAll);
 categoryControls.appendChild(labelledCheckbox);
 categoryAllCheckbox = checkboxAll;
 
-// Create category checkboxes 
+// Create category checkboxes
 for (let i = 0; i < guideCategories.length; i++) {
   let catCheckbox = document.createElement("input");
   catCheckbox.type = "checkbox";
