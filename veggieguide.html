@@ -5,7 +5,6 @@
 <!-- Encoding -->
 <meta charset="utf-8"/>
 
-
 <!-- Includes -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
@@ -15,85 +14,16 @@
    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
    crossorigin=""></script>
 
-
-
-
-
-
-
-<!-- Formatting of style elements --> 
-<style>
-
-/* Map size */
-@media only screen and (min-height: 800px){
-  #leaflet_map { height: 800px; }
-}
-@media only screen and (max-height: 800px){
-  #leaflet_map { height:90vh; }
-}
-
-/* Popups */ 
-a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_link:hover {font-weight:bold; text-decoration: none; color: #1c7e1a}
-#leaflet_popupname {font-size:16px; font-weight:bold}
-#leaflet_priceactual {color: gold; display: inline-block;}
-#leaflet_pricerest {color: lightgrey; display: inline-block;}
-
-/* Custom control layers icon */
-.leaflet-control-layers {
-	background:  #fff;
-}
-.leaflet-control-layers-toggle {
-	background-image: url(./resources/icons/choice.png);
-	background-size: 45px 45px;
-  filter: brightness(0) saturate(100%) invert(30%) sepia(99%) saturate(803%) hue-rotate(82deg) brightness(94%) contrast(85%); /* #1c7e1a, credit: https://codepen.io/sosuke/pen/Pjoqqp */
-}
-.leaflet-retina .leaflet-control-layers-toggle {
-	background-image: url(./resources/icons/choice.png);
-	background-size: 45px 45px; 
-  filter: brightness(0) saturate(100%) invert(30%) sepia(99%) saturate(803%) hue-rotate(82deg) brightness(94%) contrast(85%); /* #1c7e1a, credit: https://codepen.io/sosuke/pen/Pjoqqp */ 
-}
-.leaflet-touch .leaflet-control-layers-toggle {
-	width: 50px;
-	height: 50px; 
-}
-
-/* No overhead spacing inside layer control list */ 
-.leaflet-control-layers-list {
-	padding:0;
-}
-
-/* Category headline and close button */ 
-.leaflet_category_headline_title {
-  margin-top:16px;
-  margin-bottom:4px;
-  font-size: 18px;
-  display: inline-block;
-	font-weight: bold;
-}
-.leaflet_category_headline_close_button {
-  position: absolute; 
-	top: 0px;
-	right: 0; 
-	border: none;
-	text-align: right;
-	font: 16px/14px Tahoma, Verdana, sans-serif;
-	color: #c3c3c3;
-	text-decoration: none;
-	font-weight: bold;
-	background: transparent;
-	}
-.leaflet_category_headline_close_button:hover {
-	color: #999;
-  cursor: pointer;
-}
-
-
-</style>
+<!-- Custom CSS -->
+<link rel="stylesheet" href="veggieguide.css">
 
 </head>
+
+
+
 <body>
 
-
+  
 <!-- 
   Tierrechtsinitiative Osnabrück 2021 
   www.tierrechtsinitiative-os.de
