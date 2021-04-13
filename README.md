@@ -1,6 +1,6 @@
 # Veggieguide
 Interaktive Karte mit Listenfunktion für Veggie-Angebote in einer Region. 
-Den Osnabrücker Veggieguide in Action gibt es hier: [Veggieguide der Tierrechtsinitiative Osnabrück](https://www.tierrechtsinitiative-os.de/veggieguide/)
+Den Osnabrücker Veggieguide in Aktion gibt es hier: [Veggieguide der Tierrechtsinitiative Osnabrück](https://www.tierrechtsinitiative-os.de/veggieguide/)
 
 ![](./img/veggieguide_example.png)
 
@@ -16,6 +16,7 @@ Die Icons innerhalb der Marker sind lizensiert unter Creative Commons CCBY und s
  - Ice Cream Cone by [Mega Agustina](https://thenounproject.com/megaagustina067/) from the Noun Project 
  - Place Setting by [Rafael Farias Leão](https://thenounproject.com/rafaleao) from the Noun Project 
  - Settings by [Denis Klyuchnikov](https://thenounproject.com/denis.klyuchnikov.1/) from the Noun Project 
+
 Falls Ihr die Marker auch für euer Projekt verwenden wollt, solltet ihr die Quellen ebenfalls angeben. 
 
 ### Lizenz des Veggieguides
