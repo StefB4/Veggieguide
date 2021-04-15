@@ -478,39 +478,24 @@ function mapLinkHandler(event) {
 // Expand details in the list view
 function detailsDisplayHandler(event) {
 
-  let useParent = false;
-  let details = detailsRowList[event.target.dataset.id];
-  
-  // in case of pressing the name text rather than table cell, use parent, i.e. table cell td
-  if (typeof details == 'undefined') {
-    details = detailsRowList[event.target.parentNode.dataset.id];
-    useParent = true;
-  }
+  // use currentTarget, which refers to the element the event handler was bound to (i.e. table cell td)
+  // to also get the correct element in case of pressing the name text rather than table cell
+  let target = event.currentTarget;
+  let details = detailsRowList[target.dataset.id];
 
   // Show details
   if (details.style.display == "none") {
     details.style.display = "table-row";
-    if (useParent) {
-      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "-"; // + -> -   
-      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "bold"; // increase font weight
-      event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
-    } else {
-      event.target.getElementsByTagName('div')[1].innerHTML = "-";
-      event.target.getElementsByTagName('div')[0].style.fontWeight = "bold"; 
-      event.target.getElementsByTagName('div')[1].style.fontWeight = "bold"; 
-    }
-    
+    target.childNodes[1].innerHTML = "-"; // + -> -
+    target.childNodes[0].style.fontWeight = "bold"; // increase font weight
+    target.childNodes[1].style.fontWeight = "bold";
+    target.style.borderBottom = "none";
   } else { // hide details
     details.style.display = "none";
-    if (useParent) {
-      event.target.parentNode.getElementsByTagName('div')[1].innerHTML = "+"; // - -> +
-      event.target.parentNode.getElementsByTagName('div')[0].style.fontWeight = "normal"; // decrease font weight
-      event.target.parentNode.getElementsByTagName('div')[1].style.fontWeight = "normal";
-    } else {
-      event.target.getElementsByTagName('div')[1].innerHTML = "+";
-      event.target.getElementsByTagName('div')[0].style.fontWeight = "normal";
-      event.target.getElementsByTagName('div')[1].style.fontWeight = "normal";
-    }
+    target.childNodes[1].innerHTML = "+"; // - -> +
+    target.childNodes[0].style.fontWeight = "normal"; // decrease font weight
+    target.childNodes[1].style.fontWeight = "normal";
+    target.style.removeProperty("border-bottom");
   }
 }
 
@@ -603,7 +588,7 @@ for (var i = 0; i < allMarkerData.length; i++) {
     allMarkerData[i].name + '</div>' + '<div style="display: inline; float:right; padding-left:1em; padding-right:1em;">' +  '+'  + '</div>';
   name.dataset.id = i;
   name.style.cursor = "pointer"
-  name.addEventListener("click", detailsDisplayHandler,true) // activate details handler on click of name
+  name.addEventListener("click", detailsDisplayHandler, true) // activate details handler on click of name
 
   // Map link
   let mapLinkTd = document.createElement("td");
@@ -636,6 +621,7 @@ for (var i = 0; i < allMarkerData.length; i++) {
   let detailsTd = document.createElement("td");
   detailsTd.innerHTML = constructDetailsText(allMarkerData[i]);
   detailsTd.colSpan = 2;
+  detailsTd.style.borderTop = "none";
   currentRowDetails.style.display = "none";
   currentRow.className = "table-row-cat-" + allMarkerData[i].category;
   detailsRowList[i] = currentRowDetails;
