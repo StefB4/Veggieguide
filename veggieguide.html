@@ -437,6 +437,13 @@ function SwitchToListView() {
   mapToggleButton2.style.display = "inline-block";
   document.getElementById("leaflet_map").style.display = "none";
   document.getElementById("veggieguide_list").style.display = "block";
+
+  // sync selected categories of map and list
+  for (let e = 0; e < guideCategories.length; e++) {
+    if (guideMap.hasLayer(layerGroups[e]) != categoryCheckboxes[e].checked) {
+      categoryCheckboxes[e].click();
+    }
+  }
 }
 
 // Display Map instead of List
@@ -447,7 +454,17 @@ function SwitchToMapView() {
   document.getElementById("leaflet_map").style.display = "block";
   document.getElementById("veggieguide_list").style.display = "none";
   document.getElementById("leaflet_map").scrollIntoView(false);
-  guideMap.invalidateSize() // make sure tiles are reloaded after moving the map
+  //guideMap.invalidateSize() // make sure tiles are reloaded after moving the map
+
+  // sync selected categories of map and list
+  for (let e = 0; e < guideCategories.length; e++) {
+    if (!guideMap.hasLayer(layerGroups[e]) && (categoryAllCheckbox.checked || categoryCheckboxes[e].checked)) {
+      guideMap.addLayer(layerGroups[e]);
+    }
+    if (guideMap.hasLayer(layerGroups[e]) && (!categoryAllCheckbox.checked && !categoryCheckboxes[e].checked)) {
+      guideMap.removeLayer(layerGroups[e]);
+    }
+  }
 }
 
 // Open a marker on the Map
