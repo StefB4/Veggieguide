@@ -79,7 +79,8 @@ a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_li
   margin-left: auto;
   margin-right: auto;
   width:100%;
-  padding-top: 1em;
+  margin-top: 1em;
+  border:0.1rem solid #d7cfab;
 }
 body {
   background: #f5efe0;
@@ -104,10 +105,17 @@ body {
   text-decoration: none;
   display: inline-block;
 }
-#veggieguide_table tr td {
+#veggieguide_table td {
   border:0.1rem solid #d7cfab;
+  border-right:none;
+  border-left:none;
+  border-bottom:none;
   height: 2em;
   padding-left: 1em;
   padding-bottom: 0.2em;
   padding-top: 0.2em;
 }
+#veggieguide_table > tr:first-child > td {
+  border-top:none;
+}
+
