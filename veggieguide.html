@@ -178,12 +178,15 @@ L.tileLayer(tileLayerLink, {
     zoomOffset: 0 
 }).addTo(guideMap);
 
-// Add GitHub link in bottom left attribution 
-bottomLeftAttribution = document.getElementsByClassName("leaflet-bottom leaflet-left")[0]
-veggieguideLinkDiv = document.createElement('div')
-veggieguideLinkDiv.setAttribute("class","leaflet-control-attribution leaflet-control")
-veggieguideLinkDiv.innerHTML = "Der Veggie-Guide auf <a href='" + githubRepoLink + "'>GitHub</a>"
-bottomLeftAttribution.appendChild(veggieguideLinkDiv)
+// Add GitHub link in bottom left attribution if map is wide enough
+if (document.getElementById("leaflet_map").clientWidth > 480)
+{
+  bottomLeftAttribution = document.getElementsByClassName("leaflet-bottom leaflet-left")[0]
+  veggieguideLinkDiv = document.createElement('div')
+  veggieguideLinkDiv.setAttribute("class","leaflet-control-attribution leaflet-control")
+  veggieguideLinkDiv.innerHTML = "Der Veggie-Guide auf <a href='" + githubRepoLink + "'>GitHub</a>"
+  bottomLeftAttribution.appendChild(veggieguideLinkDiv)
+}
 
 // Load marker icons 
 // [0,0] is top left corner 
