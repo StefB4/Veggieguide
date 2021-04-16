@@ -82,6 +82,7 @@ var markerIconAnchor = [30, 80]
 var markerShadowAnchor = [30, 80] 
 var markerPopupAnchor = [0, -48] 
 var tileLayerLink = 'https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png'
+var githubRepoLink = 'https://github.com/StefB4/Veggieguide'
 ////////
 
 
@@ -176,6 +177,13 @@ L.tileLayer(tileLayerLink, {
     tileSize: 256,
     zoomOffset: 0 
 }).addTo(guideMap);
+
+// Add GitHub link in bottom left attribution 
+bottomLeftAttribution = document.getElementsByClassName("leaflet-bottom leaflet-left")[0]
+veggieguideLinkDiv = document.createElement('div')
+veggieguideLinkDiv.setAttribute("class","leaflet-control-attribution leaflet-control")
+veggieguideLinkDiv.innerHTML = "Der Veggie-Guide auf <a href='" + githubRepoLink + "'>GitHub</a>"
+bottomLeftAttribution.appendChild(veggieguideLinkDiv)
 
 // Load marker icons 
 // [0,0] is top left corner 
