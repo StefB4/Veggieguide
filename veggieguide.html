@@ -465,7 +465,6 @@ function SwitchToMapView() {
   document.getElementById("leaflet_map").style.display = "block";
   document.getElementById("veggieguide_list").style.display = "none";
   document.getElementById("leaflet_map").scrollIntoView(false);
-  //guideMap.invalidateSize() // make sure tiles are reloaded after moving the map
 
   // sync selected categories of map and list
   for (let e = 0; e < guideCategories.length; e++) {
@@ -476,6 +475,9 @@ function SwitchToMapView() {
       guideMap.removeLayer(layerGroups[e]);
     }
   }
+
+  // make sure tiles are reloaded after moving the map
+  guideMap.invalidateSize() 
 }
 
 // Open a marker on the Map
