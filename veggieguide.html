@@ -129,7 +129,7 @@ document.getElementsByClassName('enable-cookies-warning')[0].style.visibility = 
 // Show go-to-list button when cookies are allowed 
 document.getElementById("list_toggle_button").style.display = "inline-block";
 
-// Load csv 
+// Load csv (uncomment first line and comment out second line to load dynamically)
 // var raw_csv = LoadFile(veganplacesCsvPath);
 var raw_csv = `id;latitude;longitude;name;category;description;website;websitedescription;instagram;phone;address;pricing;veganlevel
 1;52.270186;8.044069;Beispiel Restaurant;restaurant;Hier gibt es tolles veganes Essen!;https://www.facebook.com/TierrechtsinitiativeOs;Facebookpage;@tierrechtsinitiative_osna;01234 56789;Beispielstraße 123, 49074;1;4
@@ -616,7 +616,7 @@ for (var i = 0; i < allMarkerData.length; i++) {
     mapLink.addEventListener("click", mapLinkHandler, true);
     mapLink.style.cursor = "pointer";
     mapLink.classList.add("color-accent");
-    mapLink.style.textDecoration = "underline";
+    mapLink.id ="list-map-link";
     mapLinkTd.appendChild(mapLink);
     buttonId++;
   }

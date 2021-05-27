@@ -10,7 +10,8 @@
 }
 
 /* Popups */ 
-a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_link:hover {font-weight:bold; text-decoration: none; color: #1c7e1a}
+a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active {font-weight:bold; text-decoration: none; color: #1c7e1a}
+a.leaflet_link:hover {text-decoration: underline;}
 #leaflet_popupname {font-size:16px; font-weight:bold}
 #leaflet_priceactual {color: gold; display: inline-block;}
 #leaflet_pricerest {color: lightgrey; display: inline-block;}
@@ -64,6 +65,11 @@ a.leaflet_link:link, a.leaflet_link:visited, a.leaflet_link:active, a.leaflet_li
   cursor: pointer;
 }
 
+/* Underline map links in list on hover */ 
+#list-map-link:hover{
+	text-decoration:underline;
+}
+
 /* Rebuilding basic good looks */
 /* Optional CSS */ 
 #leaflet_map {
@@ -86,6 +92,9 @@ body {
   background: #f5efe0;
   font-family: "Helvetica Neue";
 }
+.color-accent {
+  color: #1c7e1a;
+}
 .wp-block-button.is-style-outline {
   color: #1c7e1a;
 }
@@ -104,6 +113,10 @@ body {
   text-align: center;
   text-decoration: none;
   display: inline-block;
+}
+.wp-block-button__link:hover {
+  text-decoration: underline;
+  cursor:pointer;
 }
 #veggieguide_table td {
   border:0.1rem solid #d7cfab;
